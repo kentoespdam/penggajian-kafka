@@ -42,3 +42,28 @@ class STATUS_PENDIDIKAN(Enum):
     BELUM_SEKOLAH = 0
     SEKOLAH = 1
     SELESAI_SEKOLAH = 2
+
+
+class TUNJANGAN(Enum):
+    JABATAN = 0
+    KINERJA = 1
+    BERAS = 2
+    AIR = 3
+
+
+class EProsesGaji(Enum):
+    PENDING = 0
+    PROSES = 1
+    WAIT_VERIFICATION_PHASE_1 = 2
+    WATI_VERIFICATION_PHASE_2 = 3
+    WAIT_APPROVAL = 4
+    FINISHED = 5
+    FAILED = 6
+
+
+class JENIS_SP(Enum):
+    TEGURAN_LISAN = 0
+    SP_1 = 1
+    SP_2 = 2
+    SP_3 = 3
+    SANKSI_DENGAN_SK = 4
