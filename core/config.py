@@ -1,13 +1,17 @@
+import datetime
 import os
 import pymysql
 from dotenv import load_dotenv
 import pymysqlpool
+import logging
+logging.basicConfig(level=logging.INFO)
 
 load_dotenv()
 
 KAFKA_SERVER = os.getenv('KAFKA_SERVER')
 KAFKA_GROUP_ID = os.getenv('KAFKA_GROUP_ID')
 PENGGAJIAN_TOPIC = os.getenv('PENGGAJIAN_TOPIC')
+
 
 def get_connection_pool(autocommit: bool = False) -> pymysqlpool.Connection:
     """
@@ -50,3 +54,12 @@ def get_connection_pool(autocommit: bool = False) -> pymysqlpool.Connection:
         autocommit=autocommit,
         **config
     ).get_connection()
+
+
+def log_info(message: str) -> None:
+    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    logging.info(f"{now} {message}")
+
+def log_error(message: str) -> None:
+    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    logging.error(f"{now} {message}")
