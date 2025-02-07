@@ -67,3 +67,9 @@ class JENIS_SP(Enum):
     SP_2 = 2
     SP_3 = 3
     SANKSI_DENGAN_SK = 4
+
+
+class JENIS_GAJI(Enum):
+    NONE = "NONE"
+    PEMASUKAN = "PEMASUKAN"
+    POTONGAN = "POTONGAN"

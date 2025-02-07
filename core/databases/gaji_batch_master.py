@@ -38,7 +38,9 @@ def fetch_raw_gaji_master_batch() -> list:
         WHERE
             peg.is_deleted = FALSE
             AND peg.status_kerja = %s
-            AND peg.nipam='900800456'
+            -- AND peg.nipam IN ('690700169', '660600242')
+            -- AND peg.nipam IN ('900800456','641100143','KO-329')
+            -- AND peg.nipam IN ('730800368')
         """
 
     with get_connection_pool() as conn:
@@ -47,13 +49,14 @@ def fetch_raw_gaji_master_batch() -> list:
             return cursor.fetchall()
 
 
-def fetch_gaji_batch_master_data(root_batch_id: str) -> list:
+def fetch_gaji_batch_master_data_by_root_batch_id(root_batch_id: str) -> list:
     query = """
         SELECT
             gbm.id,
             gbm.root_batch_id, 
             gbm.pegawai_id,
             gbm.nipam,
+            gbm.nama,
             gbm.gaji_pokok, 
             gbm.golongan_id, 
             gbm.jml_jiwa, 
@@ -88,6 +91,47 @@ def fetch_gaji_batch_master_data(root_batch_id: str) -> list:
             return cursor.fetchall()
 
 
+def fetch_gaji_batch_master_by_periode(periode: str) -> list:
+    query = """
+        SELECT
+            gbm.id,
+            gbm.root_batch_id, 
+            gbm.pegawai_id,
+            gbm.nipam,
+            gbm.nama,
+            gbm.gaji_pokok, 
+            gbm.golongan_id, 
+            gbm.jml_jiwa, 
+            gbm.jml_tanggungan, 
+            gbm.kode_pajak, 
+            gbm.level_id, 
+            gbm.phdp, 
+            gbm.status_kawin, 
+            gbm.status_pegawai, 
+            gbm.gaji_profil_id, 
+            gbm.jabatan_id, 
+            gbm.organisasi_id, 
+            gbm.penghasilan_kotor, 
+            gbm.total_tambahan, 
+            gbm.total_potongan, 
+            gbm.pembulatan, 
+            gbm.penghasilan_bersih, 
+            peg.rumah_dinas_id,
+            peg.is_askes
+        FROM
+            gaji_batch_master AS gbm
+            LEFT JOIN
+            pegawai AS peg
+            ON gbm.pegawai_id = peg.id
+        WHERE 
+            gbm.periode = %s
+    """
+
+    with get_connection_pool() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(query, (periode,))
+            return cursor.fetchall()
+
 def delete_gaji_batch_master_by_root_batch_id(root_batch_id: str) -> None:
     query = "DELETE FROM gaji_batch_master WHERE root_batch_id = %s"
     with get_connection_pool() as conn:
@@ -103,7 +147,7 @@ def save_gaji_batch_master(data: pd.DataFrame) -> None:
         row["pegawai_id"],
         row["nipam"],
         row["nama"],
-        row["golongan_id"],
+        row["golongan_id"] if not pd.isna(row["golongan_id"]) else None,
         row["golongan"],
         row["pangkat"],
         row["jabatan_id"],
@@ -117,6 +161,7 @@ def save_gaji_batch_master(data: pd.DataFrame) -> None:
         row["phdp"],
         row["status_kawin"],
         row["jml_tanggungan"],
+        row["gaji_pendapatan_non_pajak_id"],
         row["kode_pajak"],
         row["jml_jiwa"],
         row["created_by"],
@@ -133,7 +178,7 @@ def save_gaji_batch_master(data: pd.DataFrame) -> None:
             root_batch_id, periode, pegawai_id, nipam, nama,
             golongan_id, golongan, pangkat, jabatan_id, nama_jabatan,
             level_id, organisasi_id, nama_organisasi, status_pegawai, gaji_profil_id,
-            gaji_pokok, phdp, status_kawin, jml_tanggungan, kode_pajak, 
+            gaji_pokok, phdp, status_kawin, jml_tanggungan, gaji_pendapatan_non_pajak_id, kode_pajak, 
             jml_jiwa, created_by, updated_by, penghasilan_kotor, total_tambahan, 
             total_potongan, pembulatan, penghasilan_bersih
         ) VALUES (
@@ -142,7 +187,7 @@ def save_gaji_batch_master(data: pd.DataFrame) -> None:
             %s, %s, %s, %s, %s,
             %s, %s, %s, %s, %s,
             %s, %s, %s, %s, %s,
-            %s, %s, %s
+            %s, %s, %s, %s
         )
         """
 
@@ -151,3 +196,46 @@ def save_gaji_batch_master(data: pd.DataFrame) -> None:
             cursor.executemany(query, update_data)
             conn.commit()
             ic("update gaji batch master ", cursor.rowcount, "affected rows")
+
+
+def update_gaji_batch_master(data: pd.DataFrame) -> None:
+    update_data = [(
+        row["penghasilan_kotor"],
+        row["total_tambahan"],
+        row["total_potongan"],
+        row["pembulatan"],
+        row["penghasilan_bersih"],
+        row["id"],
+    ) for _, row in data.iterrows()]
+
+    query = """
+            UPDATE gaji_batch_master SET
+                penghasilan_kotor = %s,
+                total_tambahan = %s,
+                total_potongan = %s,
+                pembulatan = %s,
+                penghasilan_bersih = %s
+            WHERE id = %s
+        """
+
+    with get_connection_pool() as conn:
+        with conn.cursor() as cursor:
+            cursor.executemany(query, update_data)
+            conn.commit()
+            ic("update gaji batch master ", cursor.rowcount, "affected rows")
+
+
+def reset_different_gaji_batch_master_as_false(root_batch_id: str) -> None:
+    query = "UPDATE gaji_batch_master SET is_different = false WHERE root_batch_id = %s"
+    with get_connection_pool() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(query, (root_batch_id,))
+            conn.commit()
+
+
+def update_different_gaji_batch_master(data: list) -> None:
+    query = "UPDATE gaji_batch_master SET is_different = true WHERE root_batch_id = %s AND pegawai_id = %s"
+    with get_connection_pool() as conn:
+        with conn.cursor() as cursor:
+            cursor.executemany(query, data)
+            conn.commit()

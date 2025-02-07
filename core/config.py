@@ -63,3 +63,7 @@ def log_info(message: str) -> None:
 def log_error(message: str) -> None:
     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     logging.error(f"{now} {message}")
+
+def log_debug(message: str) -> None:
+    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    logging.debug(f"{now} {message}")

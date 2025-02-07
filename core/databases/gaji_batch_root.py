@@ -3,6 +3,14 @@ from core.config import get_connection_pool
 from core.enums import EProsesGaji
 
 
+def fetch_gaji_batch_root_by_batch_id(batch_id: str) -> tuple:
+    """Fetch GajiBatchRoot by batch ID."""
+    query = "SELECT * FROM gaji_batch_root WHERE is_deleted = false AND batch_id = %s"
+    with get_connection_pool() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(query, (batch_id,))
+            return cursor.fetchone()
+
 def update_status_gaji_batch_root(root_batch_id: str, status_process: int, total_pegawai: int = 0, notes: dict = None):
     query = """
                 UPDATE gaji_batch_root
