@@ -80,3 +80,11 @@ def safe_eval(expression: str):
 
     tree = ast.parse(expression, mode='eval')
     return eval_node(tree.body)
+
+
+def get_nama_bulan(bulan: int) -> str:
+    list_bulan = [
+        "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+    ]
+
+    return list_bulan[bulan-1]

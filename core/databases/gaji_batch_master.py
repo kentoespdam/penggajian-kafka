@@ -132,6 +132,7 @@ def fetch_gaji_batch_master_by_periode(periode: str) -> list:
             cursor.execute(query, (periode,))
             return cursor.fetchall()
 
+
 def delete_gaji_batch_master_by_root_batch_id(root_batch_id: str) -> None:
     query = "DELETE FROM gaji_batch_master WHERE root_batch_id = %s"
     with get_connection_pool() as conn:
@@ -239,3 +240,26 @@ def update_different_gaji_batch_master(data: list) -> None:
         with conn.cursor() as cursor:
             cursor.executemany(query, data)
             conn.commit()
+
+
+def fetch_daftar_gaji_pegawai(root_batch_id: str):
+    query = """
+        SELECT
+            gbm.nipam,
+            gbm.nama,
+            gbm.golongan,
+            gbm.jml_jiwa,
+            gbm.gaji_pokok,
+            gbm.penghasilan_bersih,
+            peg.organinsasi_id
+        FROM
+            gaji_batch_master AS gbm
+            INNER JOIN pegawai AS peg ON gbm.pegawai_id = peg.id
+        WHERE
+            gbm.root_batch_id = %s
+        """
+
+    with get_connection_pool() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(query, (root_batch_id,))
+            return cursor.fetchall()

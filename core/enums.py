@@ -73,3 +73,4 @@ class JENIS_GAJI(Enum):
     NONE = "NONE"
     PEMASUKAN = "PEMASUKAN"
     POTONGAN = "POTONGAN"
+
