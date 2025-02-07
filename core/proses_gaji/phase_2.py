@@ -13,8 +13,8 @@ from core.databases.gaji_pendapatan_non_pajak import fetch_all_gaji_pendapatan_n
 from core.databases.gaji_tunjangan import fetch_all_tunjangan_data, filter_tunjangan_data
 from core.databases.riwayat_sp import fetch_all_riwayat_sp_by_date
 from core.databases.rumah_dinas import fetch_all_rumah_dinas, filter_rumah_dinas_by_id
-from core.enums import JENIS_GAJI, STATUS_KAWIN, TUNJANGAN
-from core.helper import replace_formula_to_variable, replace_formula_with_values_new, replace_formula_with_values, safe_eval
+from core.enums import STATUS_KAWIN, TUNJANGAN
+from core.helper import replace_formula_to_variable, replace_formula_with_values, safe_eval
 
 """
     Todo Phase 2:
@@ -246,10 +246,8 @@ def calculate_nilai_formula(komponen_gaji: pd.DataFrame, master_data: pd.DataFra
     for index, row in komponen_gaji.iterrows():
         # Create a dictionary of nilai komponen gaji
         komponen_gaji.sort_values(by="urut")
-        # create dataframe of nilai kode and urut
         nilai_komponen = {komponen["kode"]: komponen["nilai"]
                           for _, komponen in komponen_gaji.iterrows()}
-        # nilai_komponen["CEIL"] = "ceil"
         nilai_komponen["JML_ANAK"] = master_data["jml_tanggungan"]
         nilai_komponen["JML_JIWA"] = 1 + master_data["jml_tanggungan"] + \
             (0 if master_data["status_kawin"]
@@ -263,7 +261,7 @@ def calculate_nilai_formula(komponen_gaji: pd.DataFrame, master_data: pd.DataFra
         if formula in {"#SYSTEM", ""}:
             continue
 
-        nilai_formula = replace_formula_with_values_new(
+        nilai_formula = replace_formula_with_values(
             formula, nilai_komponen)
 
         # Evaluate the formula

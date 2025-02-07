@@ -4,7 +4,6 @@ import pandas as pd
 from core.config import get_connection_pool
 from core.databases.riwayat_sp import fetch_riwayat_sp
 from core.enums import STATUS_PEGAWAI, JENIS_SP
-from icecream import ic
 
 
 def fetch_all_gaji_batch_potongan_tkk_by_root_batch_id(root_batch_id: str):

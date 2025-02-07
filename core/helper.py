@@ -2,24 +2,9 @@ import ast
 import math
 import operator
 from icecream import ic
-import pandas as pd
 
 
 def replace_formula_with_values(formula: str, lookup: dict) -> str:
-    # sort lookup by key length to ensure longest match first
-    lookup = dict(
-        sorted(lookup.items(), key=lambda item: len(item[0]), reverse=True))
-    try:
-        for code, value in lookup.items():
-            formula = formula.replace(code, str(value))
-        formula = formula.replace(",", ".")
-        return formula
-    except Exception as error:
-        ic("Error evaluating formula:", error)
-        return None
-
-
-def replace_formula_with_values_new(formula: str, lookup: dict) -> str:
     try:
         formated = formula.format(**lookup)
     except Exception as error:

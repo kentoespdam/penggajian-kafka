@@ -1,5 +1,4 @@
 from core.config import get_connection_pool
-from icecream import ic
 import pandas as pd
 
 
