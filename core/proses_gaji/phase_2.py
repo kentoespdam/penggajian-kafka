@@ -3,6 +3,7 @@ import datetime
 from core.config import log_debug, log_error
 from core.databases.gaji_batch_master import fetch_gaji_batch_master_by_periode, fetch_gaji_batch_master_data_by_root_batch_id, reset_different_gaji_batch_master_as_false, update_different_gaji_batch_master, update_gaji_batch_master
 from core.databases.gaji_batch_master_proses import delete_gaji_batch_master_proses_by_master_batch_id, save_gaji_batch_master_proses
+from core.databases.gaji_batch_root import fetch_gaji_batch_root_by_batch_id, update_status_gaji_batch_root
 from core.databases.gaji_komponen import fetch_gaji_komponen
 from icecream import ic
 import pandas as pd
@@ -13,7 +14,7 @@ from core.databases.gaji_pendapatan_non_pajak import fetch_all_gaji_pendapatan_n
 from core.databases.gaji_tunjangan import fetch_all_tunjangan_data, filter_tunjangan_data
 from core.databases.riwayat_sp import fetch_all_riwayat_sp_by_date
 from core.databases.rumah_dinas import fetch_all_rumah_dinas, filter_rumah_dinas_by_id
-from core.enums import STATUS_KAWIN, TUNJANGAN
+from core.enums import STATUS_KAWIN, TUNJANGAN, EProsesGaji
 from core.helper import replace_formula_to_variable, replace_formula_with_values, safe_eval
 
 """
@@ -50,6 +51,14 @@ def calculate_gaji_detail(root_batch_id: str) -> bool:
     compare_with_latest_gaji(root_batch_id, gbm)
     update_gaji_batch_master(gbm)
 
+
+    gaji_batch_root=fetch_gaji_batch_root_by_batch_id(root_batch_id)
+    update_status_gaji_batch_root(
+        root_batch_id=root_batch_id, 
+        status_process=EProsesGaji.WAIT_VERIFICATION_PHASE_1.value,
+        total_pegawai=gaji_batch_root["total_pegawai"],
+        notes=gaji_batch_root["notes"]
+    )
     return True
 
 

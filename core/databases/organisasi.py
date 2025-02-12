@@ -12,7 +12,7 @@ def fetch_organisasi_by_level(level: int | list[int]) -> list[tuple]:
         A list of tuples containing the id, parent_id, level_org, kode, and nama of the organisasi.
     """
     query = """
-        SELECT id, parent_id, level_org, kode, nama
+        SELECT id, parent_id, level_org, kode, nama, short_name
         FROM organisasi
         WHERE is_deleted = FALSE
     """

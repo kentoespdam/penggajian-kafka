@@ -78,9 +78,7 @@ def fetch_gaji_batch_master_data_by_root_batch_id(root_batch_id: str) -> list:
             peg.is_askes
         FROM
             gaji_batch_master AS gbm
-            LEFT JOIN
-            pegawai AS peg
-            ON gbm.pegawai_id = peg.id
+        LEFT JOIN pegawai AS peg ON gbm.pegawai_id = peg.id
         WHERE 
             gbm.root_batch_id = %s
     """
@@ -242,24 +240,37 @@ def update_different_gaji_batch_master(data: list) -> None:
             conn.commit()
 
 
-def fetch_daftar_gaji_pegawai(root_batch_id: str):
+def fetch_daftar_gaji_pegawai(root_batch_id: str) -> list:
     query = """
         SELECT
+            gbm.id,
             gbm.nipam,
             gbm.nama,
+            peg.status_pegawai,
             gbm.golongan,
+            gbm.pangkat,
+            gbm.jml_tanggungan,
             gbm.jml_jiwa,
             gbm.gaji_pokok,
             gbm.penghasilan_bersih,
-            peg.organinsasi_id
+            org.id AS organisasi_id,
+            org.kode AS kode_organisasi,
+            org.nama AS nama_organisasi,
+            gbm.level_id,
+            gbp.master_batch_id,
+            gbp.kode,
+            gbp.jenis_gaji,
+            gbp.nilai
         FROM
             gaji_batch_master AS gbm
-            INNER JOIN pegawai AS peg ON gbm.pegawai_id = peg.id
+            INNER JOIN pegawai AS peg ON gbm.pegawai_id = peg.id 
+            INNER JOIN gaji_batch_master_proses gbp ON gbm.id = gbp.master_batch_id
+            INNER JOIN organisasi AS org ON peg.organisasi_id = org.id
         WHERE
             gbm.root_batch_id = %s
-        """
+    """
 
-    with get_connection_pool() as conn:
-        with conn.cursor() as cursor:
+    with get_connection_pool() as connection:
+        with connection.cursor() as cursor:
             cursor.execute(query, (root_batch_id,))
             return cursor.fetchall()

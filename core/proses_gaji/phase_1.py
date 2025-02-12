@@ -2,7 +2,7 @@ from core.config import log_debug
 from core.databases.gaji_batch_master import delete_gaji_batch_master_by_root_batch_id, fetch_raw_gaji_master_batch, save_gaji_batch_master
 from core.databases.gaji_batch_root import delete_batch_root_error_logs_by_root_batch_id, fetch_gaji_batch_root_by_batch_id, update_status_gaji_batch_root
 from core.databases.gaji_batch_root_log import save_batch_root_error_logs
-from core.enums import STATUS_PEGAWAI, EProsesGaji
+from core.enums import STATUS_KAWIN, STATUS_PEGAWAI, EProsesGaji
 import pandas as pd
 from icecream import ic
 
@@ -21,7 +21,8 @@ def validate_gaji_master(raw_gaji_master: pd.DataFrame) -> tuple[bool, dict]:
         gaji_pokok = row["gaji_pokok"]
 
         if profile_id is None:
-            log_debug(f"missing gaji profil for {row['nipam']} - {row['nama']}")
+            log_debug(
+                f"missing gaji profil for {row['nipam']} - {row['nama']}")
             summary["error"] += 1
             errors.append({
                 "root_batch_id": row["root_batch_id"],
@@ -119,11 +120,19 @@ def process_master(root_batch_id: str) -> bool:
     if not status:
         return False
 
+    raw_salary_data["jml_jiwa"] = raw_salary_data.apply(
+        lambda x: hitung_jumlah_jiwa(x), axis=1)
+
     log_debug("saving valid gaji batch master")
     save_gaji_batch_master(raw_salary_data)
     update_status_gaji_batch_root(
-        root_batch_id=root_batch_id, status_process=EProsesGaji.WAIT_VERIFICATION_PHASE_1.value,
+        root_batch_id=root_batch_id, 
+        status_process=EProsesGaji.PROSES.value,
         total_pegawai=len(raw_salary_data),
         notes=summary
     )
     return True
+
+
+def hitung_jumlah_jiwa(raw_salary_data: pd.Series) -> int:
+    return 1 + raw_salary_data["jml_tanggungan"] + (1 if raw_salary_data["status_kawin"] == STATUS_KAWIN.KAWIN.value else 0)

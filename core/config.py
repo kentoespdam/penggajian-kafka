@@ -4,7 +4,7 @@ import pymysql
 from dotenv import load_dotenv
 import pymysqlpool
 import logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 load_dotenv()
 

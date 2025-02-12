@@ -1,38 +1,80 @@
-from openpyxl import Workbook, load_workbook
-from openpyxl.worksheet.worksheet import Worksheet
+import datetime
+from openpyxl import load_workbook
 
+from core.databases.gaji_batch_master import fetch_daftar_gaji_pegawai
 from core.databases.organisasi import fetch_organisasi_by_level
-from core.helper import get_nama_bulan
-from icecream import ic
 import pandas as pd
+from core.helpers.hgpkp import generate_hgpkp_sheet
+from core.helpers.hhtkkp import generate_hhtkkp_sheet
+from core.helpers.himpunan_gaji_direksi import generate_direksi_sheet
 
 
 def main(root_batch_id: str):
+    organisasi_list = pd.DataFrame(fetch_organisasi_by_level([4]))
+
+    raw_daftar_gaji_pegawai = pd.DataFrame(
+        fetch_daftar_gaji_pegawai(root_batch_id))
+    """
+        create new data frame with raw_daftar gaji with column
+            nipam,
+            nama,
+            golongan,
+            jml_jiwa,
+            gaji_pokok,
+            penghasilan_bersih,
+            kode_organisasi
+        with unique nipam
+    """
+    daftar_gaji_pegawai = raw_daftar_gaji_pegawai[["id", "nipam", "nama", "status_pegawai", "golongan", "pangkat", "jml_tanggungan",
+                                                   "jml_jiwa", "organisasi_id", "kode_organisasi", "level_id"]].drop_duplicates(subset=["nipam"]).reset_index(drop=True)
+    daftar_gaji_pegawai["golongan"] = daftar_gaji_pegawai["golongan"].apply(
+        lambda x: "" if x is None else x)
+    daftar_gaji_pegawai["pangkat"] = daftar_gaji_pegawai["pangkat"].apply(
+        lambda x: "" if x is None else x)
+    daftar_proses_gaji_pegawai = raw_daftar_gaji_pegawai[[
+        "master_batch_id", "kode", "jenis_gaji", "nilai"]].reset_index(drop=True)
+
+    generate_excel(root_batch_id, organisasi_list,
+                   daftar_gaji_pegawai, daftar_proses_gaji_pegawai)
+
+
+def generate_excel(root_batch_id: str, organisasi_list: pd.DataFrame, daftar_gaji_pegawai: pd.DataFrame, daftar_proses_gaji_pegawai: pd.DataFrame):
     periode = root_batch_id.split("-")[0]
     tahun = int(periode[0:4])
     bulan = int(periode[4:6])
     wb = load_workbook("excel_template/daftar_gaji_template.xlsx")
-    # copy sheet_template to wb
-    ws = wb.active
-    ws.title = "DIREKSI"
-    ws["A7"] = "Bulan: {} {}".format(get_nama_bulan(bulan), tahun)
-    ws["A8"] = "DIREKSI"
 
-    organisasi_list = pd.DataFrame(fetch_organisasi_by_level([4]))
-    organisasi_list.loc[:, "short_name"] = organisasi_list["nama"].apply(
-        lambda x: x.replace("CABANG", "").replace("UNIT BISNIS", "").replace("BAG.", "").strip())
+    daftar_gaji_direksi = daftar_gaji_pegawai[
+        daftar_gaji_pegawai["level_id"].isin([2, 3, 4])
+    ].reset_index(drop=True)
 
-    generate_sheet_organisasi(wb, ws, organisasi_list, tahun, bulan)
-    wb.save("test_template.xlsx")
+    daftar_proses_gaji_direksi = daftar_proses_gaji_pegawai[
+        daftar_proses_gaji_pegawai["master_batch_id"].isin(
+            daftar_gaji_direksi["id"].tolist())
+    ].reset_index(drop=True)
 
+    dirum = daftar_gaji_pegawai[
+        daftar_gaji_pegawai["level_id"] == 4
+    ].reset_index(drop=True)
 
-def generate_sheet_organisasi(wb: Workbook, ws: Worksheet, organisasi_list: pd.DataFrame, tahun: int, bulan: int):
-    for _, row in organisasi_list.iterrows():
-        new_ws = wb.copy_worksheet(ws)
-        new_ws.title = row["short_name"]
-        new_ws["A7"] = "Bulan: {} {}".format(get_nama_bulan(bulan), tahun)
-        new_ws["A8"] = row["nama"]
+    # generate_direksi_sheet(wb, tahun, bulan, daftar_gaji_direksi,
+    #                        daftar_proses_gaji_direksi, dirum)
 
+    # generate_organisasi_sheet(wb, organisasi_list, tahun,
+    #                           bulan, daftar_gaji_pegawai, daftar_proses_gaji_pegawai, dirum)
+
+    # generate_kontrak_sheets(wb, organisasi_list, tahun,
+    #                         bulan, daftar_gaji_pegawai, daftar_proses_gaji_pegawai, dirum)
+
+    # generate_hgpkp_sheet(wb, organisasi_list, tahun, bulan,
+    #                      daftar_gaji_pegawai, daftar_proses_gaji_pegawai)
+
+    generate_hhtkkp_sheet(wb, organisasi_list, tahun, bulan,
+                          daftar_gaji_pegawai, daftar_proses_gaji_pegawai)
+    wb.remove(wb["pegawai"])
+    wb.remove(wb["kontrak"])
+    wb.save(
+        f"test_template_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}.xlsx")
 
 if __name__ == "__main__":
-    main("202401-001")
+    main("202402-001")
