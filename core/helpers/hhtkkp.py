@@ -8,9 +8,6 @@ import pandas as pd
 from core.databases.gaji_batch_master_proses import get_total_nilai_komponen
 from core.enums import STATUS_PEGAWAI
 from core.excel_helper import cell_builder
-from core.helper import get_nama_bulan
-from icecream import ic
-
 
 def generate_hhtkkp_sheet(
     workbook: Workbook, organisasi_df: pd.DataFrame, year: int, month: int,

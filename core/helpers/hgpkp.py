@@ -158,7 +158,7 @@ def generate_cell_list(worksheet: Worksheet, row_num: int,
                 salary_components, component), True)
 
 
-def generate_footer(worksheet: Worksheet, row_num: int, salary_components_df: pd.DataFrame):
+def generate_footer(worksheet: Worksheet, row_num: int):
     col_num = itertools.count(start=1)
 
     def build_cell(value: str, is_number: bool = False, h_align: str = None):

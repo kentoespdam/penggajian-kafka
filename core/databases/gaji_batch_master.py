@@ -260,7 +260,8 @@ def fetch_daftar_gaji_pegawai(root_batch_id: str) -> list:
             gbp.master_batch_id,
             gbp.kode,
             gbp.jenis_gaji,
-            gbp.nilai
+            gbp.nilai,
+            gbp.nama AS uraian
         FROM
             gaji_batch_master AS gbm
             INNER JOIN pegawai AS peg ON gbm.pegawai_id = peg.id 
