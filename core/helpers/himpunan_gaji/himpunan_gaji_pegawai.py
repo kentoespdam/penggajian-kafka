@@ -6,10 +6,8 @@ import pandas as pd
 from core.databases.gaji_batch_master_proses import get_nilai_komponen, get_total_nilai_komponen
 from core.enums import STATUS_PEGAWAI
 from core.excel_helper import cell_builder
-from icecream import ic
-
 from core.helper import get_nama_bulan
-from core.helpers.himpunan_gaji_direksi import generate_ttd
+from core.helpers.himpunan_gaji.himpunan_gaji_direksi import generate_ttd
 
 
 def generate_organisasi_sheet(
@@ -34,7 +32,8 @@ def generate_organisasi_sheet(
         current_sheet["A8"] = organisasi["nama"]
 
         pegawai_df = gaji_pegawai_df[
-            (gaji_pegawai_df["kode_organisasi"].str.startswith(organisasi["kode"]))
+            (gaji_pegawai_df["kode_organisasi"].str.startswith(
+                organisasi["kode"]))
             & (gaji_pegawai_df["status_pegawai"] != STATUS_PEGAWAI.KONTRAK.value)
         ].reset_index(drop=True)
 
@@ -44,12 +43,12 @@ def generate_organisasi_sheet(
         ].reset_index(drop=True)
 
         generate_sheet_per_organisasi(
-            current_sheet, pegawai_df, komponen_gaji_df_organisasi, dirum
+            current_sheet, pegawai_df, komponen_gaji_df_organisasi, dirum, year, month
         )
 
 
 def generate_sheet_per_organisasi(
-    worksheet: Worksheet, employees_df: pd.DataFrame, salary_components_df: pd.DataFrame, dirum: pd.DataFrame
+    worksheet: Worksheet, employees_df: pd.DataFrame, salary_components_df: pd.DataFrame, dirum: pd.DataFrame, year: int, month: int
 ):
     row_num = itertools.count(start=12)
     order_num = itertools.count(start=1)
@@ -65,7 +64,7 @@ def generate_sheet_per_organisasi(
         generate_organisasi_footer(worksheet, next(
             row_num), employees_df, salary_components_df)
     )
-    generate_ttd(worksheet, next(row_num), dirum)
+    generate_ttd(worksheet, next(row_num), dirum, year, month)
 
 
 def generate_organisasi_row(
@@ -85,7 +84,8 @@ def generate_organisasi_row(
             cell.number_format = "#,##0"
 
     build_cell(order_number)
-    build_cell(row_data["nama"])
+    build_cell(
+        f"{"** " if row_data["is_different"] else ""}{row_data["nama"]}")
     build_cell(row_data["nipam"])
     build_cell(row_data["golongan"] if row_data["golongan"]
                else "-", "center", "center")
@@ -250,6 +250,3 @@ def generate_organisasi_footer_value(worksheet: Worksheet, row_num: int, salary_
         else:
             build_cell(get_total_nilai_komponen(
                 salary_components, komponen), True)
-
-
-

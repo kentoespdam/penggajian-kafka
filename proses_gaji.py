@@ -1,5 +1,6 @@
 import datetime
 from core.config import log_error, log_info
+from core.proses_gaji import himpunan_gaji_excel, potongan_gaji_excel
 from core.proses_gaji.phase_1 import process_master
 from icecream import ic
 
@@ -31,6 +32,22 @@ def main(root_batch_id: str):
         log_error("proses detail failed")
         return
     log_info(f"Phase 2 success in {datetime.datetime.now() - start_time}\n")
+
+    """ 
+        Phase 3:
+        - generate himpunan gaji excel
+    """
+    start_time=datetime.datetime.now()
+    himpunan_gaji_excel.build(root_batch_id)
+    log_info(f"Phase 3 success in {datetime.datetime.now() - start_time}\n")
+
+    """ 
+        Phase 4:
+        - generate potongan gaji excel
+    """
+    start_time=datetime.datetime.now()
+    potongan_gaji_excel.build(root_batch_id)
+    log_info(f"Phase 4 success in {datetime.datetime.now() - start_time}\n")
 
 if __name__ == "__main__":
     main("202402-001")

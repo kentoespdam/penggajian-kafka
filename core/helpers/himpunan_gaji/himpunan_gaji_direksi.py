@@ -1,4 +1,3 @@
-from datetime import datetime
 from openpyxl import Workbook
 from openpyxl.worksheet.worksheet import Worksheet
 from openpyxl.styles import Font
@@ -6,8 +5,6 @@ import itertools
 import pandas as pd
 from core.databases.gaji_batch_master_proses import get_nilai_komponen, get_total_nilai_komponen
 from core.excel_helper import cell_builder
-from icecream import ic
-
 from core.helper import get_nama_bulan
 
 
@@ -36,7 +33,7 @@ def generate_direksi_sheet(
     row_num = itertools.count(generate_direksi_footer(
         worksheet, next(row_num), direksi_gaji_df, komponen_gaji_df))
 
-    generate_ttd(worksheet, next(row_num), dirum)
+    generate_ttd(worksheet, next(row_num), dirum, year, month)
 
 
 def generate_direksi_row(
@@ -59,7 +56,7 @@ def generate_direksi_row(
             cell.number_format = "#,##0"
 
     build_cell(urut)
-    build_cell(employee["nama"])
+    build_cell(f"{"** " if employee["is_different"] else ""}{employee["nama"]}")
     build_cell(employee["nipam"])
     build_cell("-", halign="center")
     generate_cell_list(worksheet,
@@ -313,10 +310,7 @@ def generate_footer_values(worksheet: Worksheet, row_num: int, salary_components
                 salary_components, component), True)
 
 
-def generate_ttd(worksheet: Worksheet, start_row: int, employee_data: dict) -> None:
-    current_date = datetime.now()
-    year = current_date.year
-    month = current_date.month
+def generate_ttd(worksheet: Worksheet, start_row: int, employee_data: dict, year: int, month: int) -> None:
     row_index = itertools.count(start=start_row)
 
     def add_cell(content, merge=False):

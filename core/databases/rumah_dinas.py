@@ -11,7 +11,7 @@ def fetch_all_rumah_dinas() -> list:
 
 
 def filter_rumah_dinas_by_id(rumah_dinas_data: pd.DataFrame, rumah_dinas_id: float):
-    return rumah_dinas_data[rumah_dinas_data['id'] == rumah_dinas_id]
+    return rumah_dinas_data[rumah_dinas_data['id'] == rumah_dinas_id].reset_index(drop=True)
 
 
 def fetch_rumah_dinas_by_id(rumah_dinas_id: int) -> float:

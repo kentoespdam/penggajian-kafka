@@ -217,12 +217,12 @@ def setup_nilai_referensi_komponen_gaji(
         case "REF_PHDP":
             return master_data["phdp"]
         case "REF_SEWA_RUMDIN":
-            if not pd.isna(master_data["rumah_dinas_id"]):
+            if pd.isna(master_data["rumah_dinas_id"]):
                 return 0
             else:
                 nominal = filter_rumah_dinas_by_id(
                     rumah_dinas_data,
-                    master_data["rumah_dinas_id"]
+                    int(master_data["rumah_dinas_id"])
                 )
                 return nominal["nilai"][0] if not nominal.empty else 0
         case "REF_POT_TKK":

@@ -4,7 +4,6 @@ from openpyxl.worksheet.worksheet import Worksheet
 from openpyxl.styles.fonts import Font
 from openpyxl.styles.alignment import Alignment
 import pandas as pd
-
 from core.databases.gaji_batch_master_proses import get_total_nilai_komponen
 from core.enums import STATUS_PEGAWAI
 from core.excel_helper import cell_builder

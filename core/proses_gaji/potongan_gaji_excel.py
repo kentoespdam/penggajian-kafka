@@ -1,13 +1,11 @@
-import datetime
 from openpyxl import load_workbook
-from core.databases.gaji_batch_master import fetch_daftar_gaji_pegawai, fetch_daftar_potongan_gaji_by_root_batch_id
+from core.databases.gaji_batch_master import fetch_daftar_potongan_gaji_by_root_batch_id
 from core.databases.organisasi import fetch_organisasi_by_level
 import pandas as pd
 from core.helpers.potongan_gaji.potongan_gaji_helper import generate_potongan
-from icecream import ic
 
 
-def main(root_batch_id: str):
+def build(root_batch_id: str):
     organisasi_list = pd.DataFrame(fetch_organisasi_by_level([4]))
     daftar_potongan_gaji_df = pd.DataFrame(fetch_daftar_potongan_gaji_by_root_batch_id(
         root_batch_id))
@@ -34,9 +32,6 @@ def generate_excel(root_batch_id: str, organisasi_list: pd.DataFrame, daftar_pot
         generate_potongan(
             wb, organisasi["nama"], organisasi["short_name"], tahun, bulan, potongan_gaji_pegawai)
 
+    wb.remove(wb["Sheet1"])
     wb.save(
-        f"result_excel/potongan_gaji_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}.xlsx")
-
-
-if __name__ == "__main__":
-    main("202402-001")
+        f"result_excel/potongan_gaji_{root_batch_id}.xlsx")

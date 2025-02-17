@@ -4,7 +4,10 @@ import pymysql
 from dotenv import load_dotenv
 import pymysqlpool
 import logging
-logging.basicConfig(level=logging.DEBUG)
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(filename="logs/penggajian.log",
+                    encoding="utf-8", level=logging.DEBUG)
 
 load_dotenv()
 
@@ -60,9 +63,11 @@ def log_info(message: str) -> None:
     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     logging.info(f"{now} {message}")
 
+
 def log_error(message: str) -> None:
     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     logging.error(f"{now} {message}")
+
 
 def log_debug(message: str) -> None:
     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")

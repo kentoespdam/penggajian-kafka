@@ -8,7 +8,7 @@ from core.databases.gaji_batch_master_proses import get_nilai_komponen, get_tota
 from core.enums import STATUS_PEGAWAI
 from core.excel_helper import cell_builder
 from core.helper import get_nama_bulan
-from core.helpers.himpunan_gaji_direksi import generate_ttd
+from core.helpers.himpunan_gaji.himpunan_gaji_direksi import generate_ttd
 
 
 def generate_kontrak_sheets(workbook: Workbook, organisasi_df: pd.DataFrame, year: int, month: int,
@@ -42,11 +42,11 @@ def generate_kontrak_sheets(workbook: Workbook, organisasi_df: pd.DataFrame, yea
             pegawai_ids)].reset_index(drop=True)
 
         generate_sheet_per_organisasi(
-            current_sheet, pegawai_df, komponen_gaji_df_organisasi, dirum
+            current_sheet, pegawai_df, komponen_gaji_df_organisasi, dirum, year, month
         )
 
 
-def generate_sheet_per_organisasi(worksheet: Worksheet, employees_df: pd.DataFrame, salary_components_df: pd.DataFrame, dirum: pd.DataFrame):
+def generate_sheet_per_organisasi(worksheet: Worksheet, employees_df: pd.DataFrame, salary_components_df: pd.DataFrame, dirum: pd.DataFrame, year: int, month: int):
     row_num = itertools.count(start=12)
     for index, employee in employees_df.iterrows():
         current_row_num = next(row_num)
@@ -54,18 +54,19 @@ def generate_sheet_per_organisasi(worksheet: Worksheet, employees_df: pd.DataFra
         cell_builder(worksheet, current_row_num, next(col_num), index+1, border_option={
                      "left": "thin", "right": "thin", "bottom": "thin"})
         cell_builder(worksheet, current_row_num, next(col_num),
-                     employee["nama"], border_option={
+                     f"{"** " if employee["is_different"] else ""}{employee["nama"]}", border_option={
                          "left": "thin", "right": "thin", "bottom": "thin"})
-        col_num = itertools.count(generate_organisasi_row(
+        net_col_num = generate_organisasi_row(
             worksheet, current_row_num, next(
                 col_num), employee, salary_components_df
-        ))
+        )
+        col_num = itertools.count(start=net_col_num)
         cell_builder(worksheet, current_row_num, next(col_num), f"{index+1}", border_option={
                      "left": "thin", "right": "thin", "bottom": "thin"})
 
     generate_footer(worksheet, next(row_num), salary_components_df)
     next(row_num)
-    generate_ttd(worksheet, next(row_num), dirum)
+    generate_ttd(worksheet, next(row_num), dirum, year, month)
 
 
 def generate_organisasi_row(

@@ -261,12 +261,35 @@ def fetch_daftar_gaji_pegawai(root_batch_id: str) -> list:
             gbp.kode,
             gbp.jenis_gaji,
             gbp.nilai,
-            gbp.nama AS uraian
+            gbp.nama AS uraian,
+            gbm.is_different
         FROM
             gaji_batch_master AS gbm
             INNER JOIN pegawai AS peg ON gbm.pegawai_id = peg.id 
             INNER JOIN gaji_batch_master_proses gbp ON gbm.id = gbp.master_batch_id
-            INNER JOIN organisasi AS org ON peg.organisasi_id = org.id
+            INNER JOIN organisasi AS org ON gbm.organisasi_id = org.id
+        WHERE
+            gbm.root_batch_id = %s
+    """
+
+    with get_connection_pool() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(query, (root_batch_id,))
+            return cursor.fetchall()
+
+
+def fetch_daftar_potongan_gaji_by_root_batch_id(root_batch_id: str) -> list:
+    query = """
+        SELECT
+            gbm.id,
+            gbm.nipam,
+            gbm.nama,
+            gbm.level_id,
+            org.kode AS kode_organisasi,
+            gbm.penghasilan_bersih
+        FROM
+            gaji_batch_master AS gbm
+            INNER JOIN organisasi AS org ON gbm.organisasi_id = org.id
         WHERE
             gbm.root_batch_id = %s
     """
