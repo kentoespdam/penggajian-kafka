@@ -4,5 +4,4 @@ dockerignore
 docker-compose.yml
 Dockerfile
 test*
-requirements.txt
 *__pycache__*
