@@ -1,12 +1,14 @@
+import datetime
+import pandas as pd
+from core.config import log_debug
 from core.enums import STATUS_KAWIN, STATUS_PENDIDIKAN
 from core.pegawai import update_pegawai_tanggungan
 from core.profil_keluarga import fetch_tanggungan_list, update_tanggungan_status
-import pandas as pd
-from icecream import ic
 import dask.dataframe as dd
 
 
 def calculate_tanggungan(tanggungan_list: pd.DataFrame):
+    log_debug("calculate tanggungan")
     tanggungan_list.loc[:, "tanggungan"] = ~(
         (tanggungan_list.loc[:, "status_kawin"] == STATUS_KAWIN.KAWIN.value) |
         (tanggungan_list.loc[:, "umur"] > 26) |
@@ -20,7 +22,9 @@ def calculate_tanggungan(tanggungan_list: pd.DataFrame):
     return tanggungan_list
 
 
-def main():
+def execute():
+    start=datetime.datetime.now()
+    log_debug("cron tanggungan started")
     pd.options.mode.copy_on_write = True
     tanggungan_df = pd.DataFrame(fetch_tanggungan_list())
     tanggungan_df = dd.from_pandas(
@@ -38,7 +42,4 @@ def main():
     )
 
     update_pegawai_tanggungan(tanggungan_count_df)
-
-
-if __name__ == "__main__":
-    main()
+    log_debug(f"cron tanggungan finished in {datetime.datetime.now() - start}")

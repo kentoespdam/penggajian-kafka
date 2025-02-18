@@ -1,6 +1,6 @@
 import datetime
 
-from core.config import log_debug, log_error
+from core.config import log_debug, log_error, log_info
 from core.databases.gaji_batch_master import fetch_gaji_batch_master_by_periode, fetch_gaji_batch_master_data_by_root_batch_id, reset_different_gaji_batch_master_as_false, update_different_gaji_batch_master, update_gaji_batch_master
 from core.databases.gaji_batch_master_proses import delete_gaji_batch_master_proses_by_master_batch_id, save_gaji_batch_master_proses
 from core.databases.gaji_batch_root import fetch_gaji_batch_root_by_batch_id, update_status_gaji_batch_root
@@ -35,7 +35,7 @@ def calculate_gaji_detail(root_batch_id: str) -> bool:
     Returns:
         bool: True if success, False if failed.
     """
-    log_debug(f"calculate gaji detail {root_batch_id}\n")
+    log_info(f"calculate gaji detail {root_batch_id}\n")
     gaji_batch_master_data = pd.DataFrame(
         fetch_gaji_batch_master_data_by_root_batch_id(root_batch_id))
 

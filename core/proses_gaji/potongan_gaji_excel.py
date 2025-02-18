@@ -1,4 +1,5 @@
 from openpyxl import load_workbook
+from core.config import log_info
 from core.databases.gaji_batch_master import fetch_daftar_potongan_gaji_by_root_batch_id
 from core.databases.organisasi import fetch_organisasi_by_level
 import pandas as pd
@@ -6,6 +7,7 @@ from core.helpers.potongan_gaji.potongan_gaji_helper import generate_potongan
 
 
 def build(root_batch_id: str):
+    log_info(f"generate potongan gaji excel {root_batch_id}")
     organisasi_list = pd.DataFrame(fetch_organisasi_by_level([4]))
     daftar_potongan_gaji_df = pd.DataFrame(fetch_daftar_potongan_gaji_by_root_batch_id(
         root_batch_id))

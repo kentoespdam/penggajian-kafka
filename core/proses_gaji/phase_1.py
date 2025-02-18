@@ -1,4 +1,4 @@
-from core.config import log_debug
+from core.config import log_debug, log_info
 from core.databases.gaji_batch_master import delete_gaji_batch_master_by_root_batch_id, fetch_raw_gaji_master_batch, save_gaji_batch_master
 from core.databases.gaji_batch_root import delete_batch_root_error_logs_by_root_batch_id, fetch_gaji_batch_root_by_batch_id, update_status_gaji_batch_root
 from core.databases.gaji_batch_root_log import save_batch_root_error_logs
@@ -73,7 +73,7 @@ def validate_gaji_master(raw_gaji_master: pd.DataFrame) -> tuple[bool, dict]:
 
 
 def process_master(root_batch_id: str) -> bool:
-    log_debug(f"proses gaji master {root_batch_id}")
+    log_info(f"proses gaji master {root_batch_id}")
 
     # check if root batch id already processed
     gaji_batch_root = fetch_gaji_batch_root_by_batch_id(root_batch_id)

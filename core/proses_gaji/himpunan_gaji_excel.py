@@ -1,4 +1,5 @@
 from openpyxl import load_workbook
+from core.config import log_info
 from core.databases.gaji_batch_master import fetch_daftar_gaji_pegawai
 from core.databases.organisasi import fetch_organisasi_by_level
 import pandas as pd
@@ -11,6 +12,7 @@ from core.helpers.himpunan_gaji.himpunan_gaji_pegawai import generate_organisasi
 
 
 def build(root_batch_id: str):
+    log_info(f"generate himpunan gaji excel {root_batch_id}")
     organisasi_list = pd.DataFrame(fetch_organisasi_by_level([4]))
 
     raw_daftar_gaji_pegawai = pd.DataFrame(

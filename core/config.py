@@ -1,13 +1,17 @@
 import datetime
+import logging.handlers
 import os
 import pymysql
 from dotenv import load_dotenv
 import pymysqlpool
 import logging
 
+kafka_log=logging.getLogger("aiokafka")
+kafka_log.setLevel(logging.ERROR)
 logger = logging.getLogger(__name__)
 logging.basicConfig(filename="logs/penggajian.log",
                     encoding="utf-8", level=logging.DEBUG)
+logging.handlers.RotatingFileHandler("logs/penggajian.log", maxBytes=1000, backupCount=5)
 
 load_dotenv()
 

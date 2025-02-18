@@ -6,7 +6,7 @@ from icecream import ic
 
 from core.proses_gaji.phase_2 import calculate_gaji_detail
 
-def main(root_batch_id: str):
+def execute(root_batch_id: str):
     """ 
         Phase 1:
         - generate raw gaji batch master
@@ -49,5 +49,4 @@ def main(root_batch_id: str):
     potongan_gaji_excel.build(root_batch_id)
     log_info(f"Phase 4 success in {datetime.datetime.now() - start_time}\n")
 
-if __name__ == "__main__":
-    main("202402-001")
+    log_info(f"Proses Gaji Done\n")
