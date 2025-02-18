@@ -1,5 +1,5 @@
 FROM python:3.12.7-alpine3.20 AS base
-RUN apk add --no-cache tk gcc cmake build-essential python3-dev
+RUN apk add --no-cache tk alpine-sdk gcc python3-dev
 WORKDIR /app
 RUN python -m venv .venv
 RUN source .venv/bin/activate
