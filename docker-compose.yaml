@@ -1,0 +1,14 @@
+networks:
+  back-tier:
+    external: true
+    
+services:
+  penggajian_kafka:
+    container_name: Penggajian-Kafka
+    build: .
+    ports:
+      - "81:80"
+    env_file:
+      - .env
+    networks:
+      - back-tier
