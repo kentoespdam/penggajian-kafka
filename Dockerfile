@@ -1,11 +1,10 @@
-FROM python:3.12.7-alpine3.20 AS base
-RUN apk add --no-cache tk alpine-sdk gcc python3-dev
+FROM python:3.14.0a5-slim-bookworm AS base
 WORKDIR /app
 RUN python -m venv .venv
 RUN source .venv/bin/activate
-COPY ./requirements.txt .
-RUN pip install --no-cache-dir --upgrade -r requirements.txt
+RUN pip install "fastapi[standard]" "dask[dataframe]" openpyxl apscheduler python-dotenv icecream pymysql-pool aiokafka 
 FROM base AS production
-COPY . ./
+WORKDIR /app
+COPY . .
 RUN source .venv/bin/activate
 CMD ["fastapi","run", "app/main.py", "--port", "80"]
