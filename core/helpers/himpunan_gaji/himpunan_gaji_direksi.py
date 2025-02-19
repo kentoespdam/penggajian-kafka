@@ -120,43 +120,42 @@ def generate_direksi_row(
     return next(row_counter) - 1
 
 
-def generate_cell_list(worksheet: Worksheet, row_num: int, col_num: int,
-                       salary_components: pd.DataFrame, row_data: dict, komponen_list: list,
-                       urut: int = None, is_first=False, is_last=False):
-    col_num = itertools.count(start=col_num)
+def generate_cell_list(worksheet: Worksheet, row_num: int, start_col: int,
+                       salary_df: pd.DataFrame, row_info: dict, component_list: list,
+                       order: int = None, is_first_row=False, is_last_row=False):
+    column_index = itertools.count(start=start_col)
 
-    def build_cell(
-        value: str, is_number: bool = False, center: bool = False
-    ):
-        cell = cell_builder(worksheet, row_num, next(col_num), value, h_aligment="center" if center else None, border_option={
-                            "left": "thin", "right": "thin"},)
-        if is_number:
+    def build_cell(content: str, is_numeric: bool = False, center_align: bool = False):
+        cell = cell_builder(
+            worksheet,
+            row_num,
+            next(column_index),
+            content,
+            h_aligment="center" if center_align else None,
+            border_option={"left": "thin", "right": "thin", "bottom": "thin" if is_last_row else None}
+        )
+        if is_numeric:
             cell.number_format = "#,##0"
 
-    for komponen in komponen_list:
-        if komponen == "0":
+    for component in component_list:
+        if component == "0":
             build_cell(0, True)
-        elif komponen == "":
+        elif component == "":
             build_cell("")
-        elif komponen == "JUMLAH":
-            gaji_pokok = get_nilai_komponen(
-                salary_components, row_data["id"], "GP")
-            tunj_si = get_nilai_komponen(
-                salary_components, row_data["id"], "TUNJ_SI")
-            tunj_anak = get_nilai_komponen(
-                salary_components, row_data["id"], "TUNJ_ANAK")
-            jumlah = gaji_pokok + tunj_si + tunj_anak
-            build_cell(jumlah, True)
-        elif komponen == "JML_JIWA":
-            build_cell(
-                f"{row_data["jml_tanggungan"]}/{row_data['jml_jiwa']}", center=True)
+        elif component == "JUMLAH":
+            base_salary = get_nilai_komponen(salary_df, row_info["id"], "GP")
+            si_allowance = get_nilai_komponen(salary_df, row_info["id"], "TUNJ_SI")
+            child_allowance = get_nilai_komponen(salary_df, row_info["id"], "TUNJ_ANAK")
+            total = base_salary + si_allowance + child_allowance
+            build_cell(total, True)
+        elif component == "JML_JIWA":
+            build_cell(f"{row_info['jml_tanggungan']}/{row_info['jml_jiwa']}", center_align=True)
         else:
-            build_cell(get_nilai_komponen(salary_components,
-                                          row_data["id"], komponen), True)
+            build_cell(get_nilai_komponen(salary_df, row_info["id"], component), True)
 
-    if is_first:
-        build_cell(str(urut))
-    return row_num+3
+    if is_first_row:
+        build_cell(str(order))
+    return row_num + 3
 
 
 def generate_pemda_title(worksheet: Worksheet, row_num: int, value: str = ""):
