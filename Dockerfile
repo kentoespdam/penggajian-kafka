@@ -1,10 +1,11 @@
-FROM python:3.14.0a5-slim-bookworm AS base
+# FROM python:3.14.0a5-slim-bookworm AS base
+FROM ubuntu/python:3.12-24.04_stable AS base
 WORKDIR /app
 
 FROM base AS builder
 WORKDIR /app
-RUN apt update && apt install pkg-config build-essential gcc make rustc cargo -y
-RUN python -m venv .venv
+# RUN apt update && apt install pkg-config build-essential gcc make rustc cargo -y
+RUN python3 -m venv .venv
 ENV PATH=".venv/bin:$PATH"
 RUN pip install "fastapi[standard]" openpyxl apscheduler python-dotenv icecream pymysql-pool aiokafka swifter asyncio
 # COPY requirements.txt .
