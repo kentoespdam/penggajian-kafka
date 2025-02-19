@@ -85,7 +85,7 @@ def generate_organisasi_row(
 
     build_cell(order_number)
     build_cell(
-        f"{"** " if row_data["is_different"] else ""}{row_data["nama"]}")
+        f"{"** " if row_data['is_different'] else ""}{row_data['nama']}")
     build_cell(row_data["nipam"])
     build_cell(row_data["golongan"] if row_data["golongan"]
                else "-", "center", "center")
