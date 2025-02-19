@@ -126,8 +126,7 @@ def generate_gaji_batch_master_proses_data(root_batch_id: str, gaji_batch_master
         fetch_all_gaji_pendapatan_non_pajak())
     result_komponen_list = pd.DataFrame()
     for _, master_row in gaji_batch_master_data.iterrows():
-        log_debug(f"Processing gaji komponen detail for {
-            master_row['nipam']} - {master_row['nama']} - [{master_row["status_pegawai"]}] - {master_row['golongan_id']}")
+        log_debug(f"Processing gaji komponen detail for {master_row['nipam']} - {master_row['nama']} - [{master_row["status_pegawai"]}] - {master_row['golongan_id']}")
 
         komponen_data = all_komponen_gaji[all_komponen_gaji["profil_gaji_id"]
                                           == master_row["gaji_profil_id"]]
@@ -148,8 +147,7 @@ def generate_gaji_batch_master_proses_data(root_batch_id: str, gaji_batch_master
                 riwayat_sp_data, gaji_potongan_tkk_data, gaji_pendapatan_non_pajak_data),
             axis=1
         )
-        log_debug(f"Finished setting up nilai referensi komponen gaji in {
-            datetime.datetime.now() - start_time}")
+        log_debug(f"Finished setting up nilai referensi komponen gaji in {datetime.datetime.now() - start_time}")
 
         # Set up nilai formula
         log_debug("Setting up nilai formula")
@@ -159,8 +157,7 @@ def generate_gaji_batch_master_proses_data(root_batch_id: str, gaji_batch_master
         )
         komponen_df = calculate_nilai_formula(
             komponen_df, master_row, maksimal_potongan)
-        log_debug(f"Finished setting up nilai formula in {
-            datetime.datetime.now() - start_time}\n")
+        log_debug(f"Finished setting up nilai formula in {datetime.datetime.now() - start_time}\n")
 
         komponen_df["nilai"] = komponen_df["nilai"].swifter.apply(
             lambda x: 0 if pd.isna(x) else x)
@@ -324,5 +321,4 @@ def compare_with_latest_gaji(root_batch_id: str, master_data: pd.DataFrame):
     if different_gaji:
         update_different_gaji_batch_master(different_gaji)
 
-    log_debug(f"Comparing with latest gaji finished in {
-              datetime.datetime.now() - start_time}")
+    log_debug(f"Comparing with latest gaji finished in {datetime.datetime.now() - start_time}")
