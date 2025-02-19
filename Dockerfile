@@ -1,7 +1,8 @@
-FROM python:3.12.7-alpine3.20 AS base
-RUN apk add --no-cache tk
+FROM python:3.12.9-slim-bookworm AS base
 WORKDIR /app
+COPY wheelhouse .
+RUN pip install --no-cache-dir --find-links=/app/wheelhouse --only-binary=:all: -r requirements.txt
+FROM base AS runner
 COPY . .
-RUN mkdir logs
-RUN pip install --no-cache-dir --find-links=/app/wheelhouse --only-binary=:all -r requirements.txt
+RUN rm -rf wheelhouse
 CMD ["fastapi","run", "main.py", "--port", "80"]
