@@ -38,83 +38,86 @@ def generate_direksi_sheet(
 
 def generate_direksi_row(
         worksheet: Worksheet,
-        row_num: int,
-        urut: int,
+        start_row: int,
+        order_number: int,
         employee: dict,
         salary_components: pd.DataFrame):
-    row_counter = itertools.count(start=row_num)
-    column_index = itertools.count(start=1)
+    row_counter = itertools.count(start=start_row)
+    column_counter = itertools.count(start=1)
 
-    def build_cell(value, is_number=False, halign=None, valign=None):
+    def build_cell(content, is_numeric=False, horizontal_align=None, vertical_align=None):
         cell = cell_builder(
-            worksheet=worksheet, row_num=row_num, column_num=next(column_index), content=value,
-            h_aligment=halign, v_aligment=valign, border_option={
-                "left": "thin", "right": "thin"
-            }
+            worksheet=worksheet,
+            row_num=start_row,
+            column_num=next(column_counter),
+            content=content,
+            h_aligment=horizontal_align,
+            v_aligment=vertical_align,
+            border_option={"left": "thin", "right": "thin"}
         )
-        if is_number:
+        if is_numeric:
             cell.number_format = "#,##0"
 
-    build_cell(urut)
-    build_cell(f"{"** " if employee["is_different"] else ""}{employee["nama"]}")
+    build_cell(order_number)
+    build_cell("{}{}".format("** " if employee["is_different"] else "", employee["nama"]))
     build_cell(employee["nipam"])
     build_cell("-", halign="center")
-    generate_cell_list(worksheet,
-                       next(row_counter),
-                       5,
-                       salary_components,
-                       employee,
-                       ["GP", "0", "TUNJ_JABATAN", "TUNJ_AIR", "POT_PENSIUN",
-                        "POT_ASKES", "PENGHASILAN_BERSIH_FINAL"],
-                       urut=urut,
-                       is_first=True,)
-    generate_cell_list(worksheet,
-                       next(row_counter),
-                       1,
-                       salary_components,
-                       employee,
-                       ["", "", "", "JML_JIWA", "TUNJ_SI", "0", "TUNJ_BERAS",
-                        "TUNJ_PPH21", "POT_ASTEK", "POT_TKK", "", ""])
-    generate_cell_list(worksheet,
-                       next(row_counter),
-                       1,
-                       salary_components,
-                       employee,
-                       ["", "", "", "", "TUNJ_ANAK", "", "TUNJ_KK", "PENGHASILAN_KOTOR",
-                        "SEWA_RUDIN", "POT_PPH21", "", ""])
-    generate_cell_list(worksheet,
-                       next(row_counter),
-                       1,
-                       salary_components,
-                       employee,
-                       ["", "", "", "", "JUMLAH", "", "TUNJ_KESEHATAN",
-                        "PEMBULATAN", "POT_JP", "POTONGAN", "", ""],
-                       is_last=True)
-    generate_pemda_title(worksheet, next(
-        row_counter), "Gaji yang telah diterima di PEMDA")
-    for index, component_list in enumerate([
+
+    components = [
+        ["GP", "0", "TUNJ_JABATAN", "TUNJ_AIR", "POT_PENSIUN", "POT_ASKES", "PENGHASILAN_BERSIH_FINAL"],
+        ["", "", "", "JML_JIWA", "TUNJ_SI", "0", "TUNJ_BERAS", "TUNJ_PPH21", "POT_ASTEK", "POT_TKK", "", ""],
+        ["", "", "", "", "TUNJ_ANAK", "", "TUNJ_KK", "PENGHASILAN_KOTOR", "SEWA_RUDIN", "POT_PPH21", "", ""],
+        ["", "", "", "", "JUMLAH", "", "TUNJ_KESEHATAN", "PEMBULATAN", "POT_JP", "POTONGAN", "", ""]
+    ]
+    
+    for idx, component_list in enumerate(components):
+        generate_cell_list(
+            worksheet,
+            next(row_counter),
+            5 if idx == 0 else 1,
+            salary_components,
+            employee,
+            component_list,
+            urut=order_number,
+            is_first=(idx == 0),
+            is_last=(idx == len(components) - 1)
+        )
+
+    generate_pemda_title(worksheet, next(row_counter), "Gaji yang telah diterima di PEMDA")
+
+    pemda_values_components = [
         ["0", "0", "0", "0", "0", "0", "0", ""],
         ["0", "0", "0", "0", "0", "0", "", ""],
         ["0", "", "0", "0", "0", "0", "", ""],
         ["0", "", "0", "0", "0", "0", "", ""]
-    ]):
-        generate_pemda_value(worksheet, next(row_counter)-1, employee,
-                             salary_components, component_list, is_first=index == 0, is_last=index == 3)
-    row_counter = itertools.count(start=next(row_counter)-1)
-    generate_pemda_title(worksheet, next(row_counter),
-                         "Kekurangan yang harus dibayar PDAM")
-    for index, component_list in enumerate([
-        ["GP", "0", "TUNJ_JABATAN", "TUNJ_AIR", "POT_PENSIUN",
-            "POT_ASKES", "PENGHASILAN_BERSIH_FINAL", ""],
-        ["TUNJ_SI", "0", "TUNJ_BERAS", "TUNJ_PPH21", "POT_ASTEK", "POT_TKK", "", ""],
-        ["TUNJ_ANAK", "", "TUNJ_KK", "PENGHASILAN_KOTOR",
-            "SEWA_RUDIN", "POT_PPH21", "", ""],
-        ["JUMLAH", "", "TUNJ_KESEHATAN", "PEMBULATAN", "POT_JP", "POTONGAN", "", ""]
-    ]):
-        generate_pemda_value(worksheet, next(row_counter)-1, employee,
-                             salary_components, component_list, is_first=index == 0, is_last=index == 3)
+    ]
 
-    return next(row_counter)-1
+    for idx, component_list in enumerate(pemda_values_components):
+        generate_pemda_value(
+            worksheet,
+            next(row_counter) - 1,
+            employee,
+            salary_components,
+            component_list,
+            is_first=(idx == 0),
+            is_last=(idx == len(pemda_values_components) - 1)
+        )
+
+    row_counter = itertools.count(start=next(row_counter) - 1)
+    generate_pemda_title(worksheet, next(row_counter), "Kekurangan yang harus dibayar PDAM")
+
+    for idx, component_list in enumerate(components):
+        generate_pemda_value(
+            worksheet,
+            next(row_counter) - 1,
+            employee,
+            salary_components,
+            component_list,
+            is_first=(idx == 0),
+            is_last=(idx == len(components) - 1)
+        )
+
+    return next(row_counter) - 1
 
 
 def generate_cell_list(worksheet: Worksheet, row_num: int, col_num: int,

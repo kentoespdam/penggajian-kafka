@@ -6,7 +6,7 @@ WORKDIR /app
 RUN apt update && apt install pkg-config build-essential -y
 RUN python -m venv .venv
 ENV PATH=".venv/bin:$PATH"
-RUN pip install "fastapi[standard]" openpyxl apscheduler python-dotenv icecream pymysql-pool aiokafka swifter
+RUN pip install "fastapi[standard]" openpyxl apscheduler python-dotenv icecream pymysql-pool aiokafka swifter asynio
 # COPY requirements.txt .
 RUN pip install -r requirements.txt
 
