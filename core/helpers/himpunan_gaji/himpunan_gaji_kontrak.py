@@ -9,7 +9,6 @@ from core.enums import STATUS_PEGAWAI
 from core.excel_helper import cell_builder
 from core.helper import get_nama_bulan
 from core.helpers.himpunan_gaji.himpunan_gaji_direksi import generate_ttd
-import swifter
 
 def generate_kontrak_sheets(workbook: Workbook, organisasi_df: pd.DataFrame, year: int, month: int,
                             gaji_kontrak_df: pd.DataFrame, komponen_gaji_df: pd.DataFrame,
@@ -19,7 +18,7 @@ def generate_kontrak_sheets(workbook: Workbook, organisasi_df: pd.DataFrame, yea
     """
     kontrak_df = gaji_kontrak_df[gaji_kontrak_df["status_pegawai"]
                                  == STATUS_PEGAWAI.KONTRAK.value].reset_index(drop=True)
-    kontrak_df["kode_organisasi"] = kontrak_df["kode_organisasi"].swifter.apply(
+    kontrak_df["kode_organisasi"] = kontrak_df["kode_organisasi"].apply(
         lambda x: x[:3] if len(x) == 5 else x[:5])
 
     kontrak_org_codes = kontrak_df["kode_organisasi"].unique().tolist()

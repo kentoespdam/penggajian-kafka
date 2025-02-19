@@ -4,7 +4,6 @@ from core.databases.gaji_batch_root import delete_batch_root_error_logs_by_root_
 from core.databases.gaji_batch_root_log import save_batch_root_error_logs
 from core.enums import STATUS_KAWIN, STATUS_PEGAWAI, EProsesGaji
 import pandas as pd
-import swifter
 
 def validate_gaji_master(raw_gaji_master: pd.DataFrame) -> tuple[bool, dict]:
     """
@@ -113,13 +112,13 @@ def process_master(root_batch_id: str) -> bool:
         pembulatan=0,
         penghasilan_bersih=0
     )
-    raw_salary_data["golongan_id"] = raw_salary_data.swifter.apply(lambda x: 1 if x["status_pegawai"] in {
+    raw_salary_data["golongan_id"] = raw_salary_data.apply(lambda x: 1 if x["status_pegawai"] in {
                                                            STATUS_PEGAWAI.CALON_HONORER.value, STATUS_PEGAWAI.HONORER.value} else x["golongan_id"], axis=1)
     status, summary = validate_gaji_master(raw_salary_data)
     if not status:
         return False
 
-    raw_salary_data["jml_jiwa"] = raw_salary_data.swifter.apply(
+    raw_salary_data["jml_jiwa"] = raw_salary_data.apply(
         lambda x: hitung_jumlah_jiwa(x), axis=1)
 
     log_debug("saving valid gaji batch master")

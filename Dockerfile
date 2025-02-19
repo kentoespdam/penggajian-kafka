@@ -1,14 +1,8 @@
-# FROM python:3.14.0a5-slim-bookworm AS base
-
-FROM python:3.9-slim-buster AS builder
-WORKDIR /app
-# RUN apt update && apt install pkg-config build-essential gcc make rustc cargo -y
-RUN pip install "fastapi[standard]" openpyxl apscheduler python-dotenv icecream pymysql-pool aiokafka swifter asyncio
-# COPY requirements.txt .
-RUN pip install -r requirements.txt
-
-FROM python:3.9.0a5-alpine AS production
-WORKDIR /app
-COPY --from=builder /app/lib/python3.9 /app/lib/python3.9
+FROM python:3.12.7-alpine3.20 AS base
+RUN apk add --no-cache tk
+WORKDIR /project
+COPY ./requirements.txt .
+RUN pip install --no-cache-dir --upgrade -r requirements.txt
+FROM base AS production
 COPY . .
-CMD ["fastapi","run", "app/main.py", "--port", "80"]
+CMD ["fastapi","run", "main.py", "--port", "80"]

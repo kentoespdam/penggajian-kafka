@@ -7,7 +7,6 @@ import pandas as pd
 from core.databases.gaji_batch_master_proses import get_total_nilai_komponen
 from core.enums import STATUS_PEGAWAI
 from core.excel_helper import cell_builder
-import swifter
 
 def generate_hhtkkp_sheet(
     workbook: Workbook, organisasi_df: pd.DataFrame, year: int, month: int,
@@ -22,7 +21,7 @@ def generate_hhtkkp_sheet(
 
     gaji_pegawai_df = gaji_pegawai_df[gaji_pegawai_df["status_pegawai"]
                                       == STATUS_PEGAWAI.KONTRAK.value].reset_index(drop=True)
-    gaji_pegawai_df["kode_organisasi"] = gaji_pegawai_df["kode_organisasi"].swifter.apply(
+    gaji_pegawai_df["kode_organisasi"] = gaji_pegawai_df["kode_organisasi"].apply(
         lambda x: x[:3] if len(x) == 5 else x[:5])
     organisasi_df = organisasi_df[organisasi_df["kode"].isin(
         gaji_pegawai_df["kode_organisasi"].unique().tolist())].reset_index(drop=True)
