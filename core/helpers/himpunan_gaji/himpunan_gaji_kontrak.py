@@ -54,7 +54,7 @@ def generate_sheet_per_organisasi(worksheet: Worksheet, employees_df: pd.DataFra
         cell_builder(worksheet, current_row_num, next(col_num), index+1, border_option={
                      "left": "thin", "right": "thin", "bottom": "thin"})
         cell_builder(worksheet, current_row_num, next(col_num),
-                     f"{"** " if employee['is_different'] else ""}{employee['nama']}", border_option={
+                     f"{'** ' if employee['is_different'] else ''}{employee['nama']}", border_option={
                          "left": "thin", "right": "thin", "bottom": "thin"})
         net_col_num = generate_organisasi_row(
             worksheet, current_row_num, next(
