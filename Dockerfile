@@ -1,4 +1,4 @@
-FROM python:3.14.0a5-slim-bookworm AS base
+FROM python:3.14.0a5 AS base
 WORKDIR /app
 
 FROM base AS builder
