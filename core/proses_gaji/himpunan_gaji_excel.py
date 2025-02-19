@@ -9,7 +9,7 @@ from core.helpers.himpunan_gaji.hhtkkp import generate_hhtkkp_sheet
 from core.helpers.himpunan_gaji.himpunan_gaji_direksi import generate_direksi_sheet
 from core.helpers.himpunan_gaji.himpunan_gaji_kontrak import generate_kontrak_sheets
 from core.helpers.himpunan_gaji.himpunan_gaji_pegawai import generate_organisasi_sheet
-
+import swifter
 
 def build(root_batch_id: str):
     log_info(f"generate himpunan gaji excel {root_batch_id}")
@@ -30,9 +30,9 @@ def build(root_batch_id: str):
     """
     daftar_gaji_pegawai = raw_daftar_gaji_pegawai[["id", "nipam", "nama", "status_pegawai", "golongan", "pangkat", "jml_tanggungan",
                                                    "jml_jiwa", "organisasi_id", "kode_organisasi", "nama_organisasi", "level_id", "is_different"]].drop_duplicates(subset=["nipam"]).reset_index(drop=True)
-    daftar_gaji_pegawai["golongan"] = daftar_gaji_pegawai["golongan"].apply(
+    daftar_gaji_pegawai["golongan"] = daftar_gaji_pegawai["golongan"].swifter.apply(
         lambda x: "" if x is None else x)
-    daftar_gaji_pegawai["pangkat"] = daftar_gaji_pegawai["pangkat"].apply(
+    daftar_gaji_pegawai["pangkat"] = daftar_gaji_pegawai["pangkat"].swifter.apply(
         lambda x: "" if x is None else x)
     daftar_proses_gaji_pegawai = raw_daftar_gaji_pegawai[[
         "master_batch_id", "kode", "jenis_gaji", "nilai", "uraian", "kode_organisasi"]].reset_index(drop=True)

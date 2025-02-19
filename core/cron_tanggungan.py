@@ -4,7 +4,6 @@ from core.config import log_debug
 from core.enums import STATUS_KAWIN, STATUS_PENDIDIKAN
 from core.pegawai import update_pegawai_tanggungan
 from core.profil_keluarga import fetch_tanggungan_list, update_tanggungan_status
-import dask.dataframe as dd
 
 
 def calculate_tanggungan(tanggungan_list: pd.DataFrame):
@@ -25,13 +24,9 @@ def calculate_tanggungan(tanggungan_list: pd.DataFrame):
 def execute():
     start=datetime.datetime.now()
     log_debug("cron tanggungan started")
-    pd.options.mode.copy_on_write = True
+    # pd.options.mode.copy_on_write = True
     tanggungan_df = pd.DataFrame(fetch_tanggungan_list())
-    tanggungan_df = dd.from_pandas(
-        tanggungan_df, npartitions=2
-    ).map_partitions(
-        calculate_tanggungan
-    ).compute()
+    tanggungan_df = calculate_tanggungan(tanggungan_df)
 
     update_tanggungan_status(tanggungan_df)
     tanggungan_count_df = (
