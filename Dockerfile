@@ -2,6 +2,7 @@ FROM python:3.14.0a5-slim-bookworm AS base
 WORKDIR /app
 
 FROM base AS builder
+WORKDIR /app
 RUN apt update && apt install pkg-config build-essential -y
 RUN python -m venv .venv
 ENV PATH=".venv/bin:$PATH"
