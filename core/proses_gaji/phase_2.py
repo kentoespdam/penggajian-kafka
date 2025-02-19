@@ -126,7 +126,7 @@ def generate_gaji_batch_master_proses_data(root_batch_id: str, gaji_batch_master
         fetch_all_gaji_pendapatan_non_pajak())
     result_komponen_list = pd.DataFrame()
     for _, master_row in gaji_batch_master_data.iterrows():
-        log_debug(f"Processing gaji komponen detail for {master_row['nipam']} - {master_row['nama']} - [{master_row["status_pegawai"]}] - {master_row['golongan_id']}")
+        log_debug(f"Processing gaji komponen detail for {master_row['nipam']} - {master_row['nama']} - [{master_row['status_pegawai']}] - {master_row['golongan_id']}")
 
         komponen_data = all_komponen_gaji[all_komponen_gaji["profil_gaji_id"]
                                           == master_row["gaji_profil_id"]]
