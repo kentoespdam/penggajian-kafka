@@ -61,7 +61,7 @@ def generate_direksi_row(
     build_cell(order_number)
     build_cell("{}{}".format("** " if employee["is_different"] else "", employee["nama"]))
     build_cell(employee["nipam"])
-    build_cell("-", halign="center")
+    build_cell("-", horizontal_align="center")
 
     components = [
         ["GP", "0", "TUNJ_JABATAN", "TUNJ_AIR", "POT_PENSIUN", "POT_ASKES", "PENGHASILAN_BERSIH_FINAL"],
@@ -78,9 +78,9 @@ def generate_direksi_row(
             salary_components,
             employee,
             component_list,
-            urut=order_number,
-            is_first=(idx == 0),
-            is_last=(idx == len(components) - 1)
+            order=order_number,
+            is_first_row=(idx == 0),
+            is_last_row=(idx == len(components) - 1)
         )
 
     generate_pemda_title(worksheet, next(row_counter), "Gaji yang telah diterima di PEMDA")

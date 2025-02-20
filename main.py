@@ -8,6 +8,8 @@ from fastapi import FastAPI, Response
 from fastapi.responses import StreamingResponse
 
 from core import cron_tanggungan
+from core.databases.gaji_batch_root import exists_gaji_batch_root_by_batch_id
+from core.proses_gaji import himpunan_gaji_excel, potongan_gaji_excel
 from core.proses_gaji.consumer import consume_proses_gaji
 
 
@@ -32,6 +34,17 @@ app = FastAPI(
     not_found_response={"message": "Not Found"},
 )
 
+
+@app.get("/export/regenerate/{export_id}", status_code=200)
+async def regenerate(export_id: str):
+    exist=exists_gaji_batch_root_by_batch_id(export_id)
+    if not exist:
+        return Response("Unknown Gaji Batch ID", status_code=404)
+    
+    himpunan_gaji_excel.build(export_id)
+    potongan_gaji_excel.build(export_id)
+
+    return Response("Success", status_code=200)
 
 @app.get("/export/table_gaji/{export_id}", status_code=200)
 async def table_gaji(export_id: str):

@@ -36,3 +36,17 @@ def delete_batch_root_error_logs_by_root_batch_id(root_batch_id: str):
         with conn.cursor() as cursor:
             cursor.execute(query, (root_batch_id,))
             conn.commit()
+
+def exists_gaji_batch_root_by_batch_id(batch_id: str) -> bool:
+    query = """
+        SELECT COUNT(*) AS jml
+        FROM gaji_batch_root
+        WHERE batch_id = %s
+        AND is_deleted = FALSE
+        AND status > 1
+    """
+    with get_connection_pool() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(query, (batch_id,))
+            result = cursor.fetchone()
+            return  result["jml"]>0 if result else 0

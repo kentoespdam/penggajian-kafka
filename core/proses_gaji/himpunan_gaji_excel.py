@@ -81,5 +81,6 @@ def generate_excel(root_batch_id: str, organisasi_list: pd.DataFrame, daftar_gaj
     wb.remove(wb["HGPKP1"])
     wb.remove(wb["HHTKKP1"])
     wb.remove(wb["HG1"])
+    wb.active = wb["HG"]
     wb.save(
         f"result_excel/tabel_gaji_{root_batch_id}.xlsx")
