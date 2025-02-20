@@ -8,4 +8,4 @@ WORKDIR /app
 COPY . .
 RUN mkdir logs result_excel
 RUN rm -rf wheelhouse
-CMD ["fastapi","run", "main.py", "--port", "80"]
+CMD ["fastapi","run", "main.py", "--port", "80", "&&","tail","-f","logs/penggajian.log"]
