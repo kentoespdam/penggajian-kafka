@@ -7,5 +7,6 @@ FROM base AS runner
 WORKDIR /app
 COPY . .
 RUN mkdir logs result_excel
+RUN touch logs/penggajian.log
 RUN rm -rf wheelhouse
 CMD ["fastapi","run", "main.py", "--port", "80", "&&","tail","-f","logs/penggajian.log"]
