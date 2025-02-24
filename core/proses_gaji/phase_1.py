@@ -57,7 +57,7 @@ def validate_gaji_master(raw_gaji_master: pd.DataFrame) -> tuple[bool, dict]:
         summary["valid"] += 1
 
     if summary["error"] > 0:
-        log_debug(f"proses gaji master failed {summary.to_dict()}")
+        log_debug(f"proses gaji master failed {summary}")
         update_status_gaji_batch_root(
             root_batch_id=row["root_batch_id"],
             status_process=EProsesGaji.FAILED.value,
