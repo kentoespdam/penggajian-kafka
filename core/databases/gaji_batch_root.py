@@ -15,10 +15,12 @@ def update_status_gaji_batch_root(root_batch_id: str, status_process: int, total
     query = """
                 UPDATE gaji_batch_root
                 SET
-                    total_pegawai = %s,
-                    notes=%s,
                     status = %s
                 """
+    if total_pegawai>0:
+        query += ", total_pegawai = %s"
+    if notes:
+        query += ", notes = %s"
     if status_process == EProsesGaji.PROSES.value:
         query += ", tanggal_proses = NOW()"
 
