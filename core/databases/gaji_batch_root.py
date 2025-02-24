@@ -20,10 +20,10 @@ def update_status_gaji_batch_root(root_batch_id: str, status_process: int, total
     if total_pegawai > 0:
         query += ", total_pegawai = %s"
         params.append(total_pegawai)
-    elif notes:
+    if notes:
         query += ", notes = %s"
         params.append(json.dumps(notes))
-    elif status_process == EProsesGaji.PROSES.value:
+    if status_process == EProsesGaji.PROSES.value:
         query += ", tanggal_proses = NOW()"
 
     query += " WHERE batch_id = %s"
