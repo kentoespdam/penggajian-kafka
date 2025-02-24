@@ -17,18 +17,21 @@ def update_status_gaji_batch_root(root_batch_id: str, status_process: int, total
                 SET
                     status = %s
                 """
+    params=(status_process, root_batch_id)
     if total_pegawai>0:
         query += ", total_pegawai = %s"
+        params=(status_process, total_pegawai, root_batch_id)
     if notes:
         query += ", notes = %s"
+        params=(status_process, total_pegawai, json.dumps(notes), root_batch_id)
     if status_process == EProsesGaji.PROSES.value:
         query += ", tanggal_proses = NOW()"
+        params=(status_process, total_pegawai, json.dumps(notes), root_batch_id)
 
     query += " WHERE batch_id = %s"
     with get_connection_pool() as conn:
         with conn.cursor() as cursor:
-            cursor.execute(query, (total_pegawai, json.dumps(
-                notes) if notes else None, status_process, root_batch_id))
+            cursor.execute(query, params)
             conn.commit()
 
 
