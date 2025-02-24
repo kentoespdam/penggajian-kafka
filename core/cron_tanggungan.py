@@ -7,7 +7,7 @@ from core.profil_keluarga import fetch_tanggungan_list, update_tanggungan_status
 
 
 def calculate_tanggungan(tanggungan_list: pd.DataFrame):
-    log_debug("calculate tanggungan")
+    log_info("calculate tanggungan")
     tanggungan_list.loc[:, "tanggungan"] = ~(
         (tanggungan_list.loc[:, "status_kawin"] == STATUS_KAWIN.KAWIN.value) |
         (tanggungan_list.loc[:, "umur"] > 26) |
@@ -23,7 +23,7 @@ def calculate_tanggungan(tanggungan_list: pd.DataFrame):
 
 def execute():
     start=datetime.datetime.now()
-    log_debug("cron tanggungan started")
+    log_info("cron tanggungan started")
     # pd.options.mode.copy_on_write = True
     tanggungan_df = pd.DataFrame(fetch_tanggungan_list())
     tanggungan_df = calculate_tanggungan(tanggungan_df)
@@ -37,4 +37,4 @@ def execute():
     )
 
     update_pegawai_tanggungan(tanggungan_count_df)
-    log_debug(f"cron tanggungan finished in {datetime.datetime.now() - start}")
+    log_info(f"cron tanggungan finished in {datetime.datetime.now() - start}")

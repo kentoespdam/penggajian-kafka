@@ -64,7 +64,7 @@ def processing_gaji_komponen_detail(root_batch_id: str, gaji_batch_master_data: 
     Args:
         gaji_batch_master_data (pd.DataFrame): Gaji batch master data.
     """
-    log_debug("Setting up gaji komponen detail")
+    log_info("Setting up gaji komponen detail")
     gbm, mbp = generate_gaji_batch_master_proses_data(
         root_batch_id, gaji_batch_master_data)
 
@@ -120,7 +120,7 @@ def generate_gaji_batch_master_proses_data(root_batch_id: str, gaji_batch_master
         fetch_all_gaji_pendapatan_non_pajak())
     result_komponen_list = pd.DataFrame()
     for _, master_row in gaji_batch_master_data.iterrows():
-        log_debug(f"Processing gaji komponen detail for {master_row['nipam']} - {master_row['nama']} - [{master_row['status_pegawai']}] - {master_row['golongan_id']}")
+        log_info(f"Processing gaji komponen detail for {master_row['nipam']} - {master_row['nama']} - [{master_row['status_pegawai']}] - {master_row['golongan_id']}")
 
         komponen_data = all_komponen_gaji[all_komponen_gaji["profil_gaji_id"]
                                           == master_row["gaji_profil_id"]]
@@ -133,7 +133,7 @@ def generate_gaji_batch_master_proses_data(root_batch_id: str, gaji_batch_master
         )
 
         # Set up nilai referensi komponen gaji
-        log_debug("Setting up nilai referensi komponen gaji")
+        log_info("Setting up nilai referensi komponen gaji")
         start_time = datetime.datetime.now()
         komponen_df["nilai"] = komponen_df.apply(
             lambda row: row["nilai"] if not row["is_reference"] else setup_nilai_referensi_komponen_gaji(
@@ -141,17 +141,17 @@ def generate_gaji_batch_master_proses_data(root_batch_id: str, gaji_batch_master
                 riwayat_sp_data, gaji_potongan_tkk_data, gaji_pendapatan_non_pajak_data),
             axis=1
         )
-        log_debug(f"Finished setting up nilai referensi komponen gaji in {datetime.datetime.now() - start_time}")
+        log_info(f"Finished setting up nilai referensi komponen gaji in {datetime.datetime.now() - start_time}")
 
         # Set up nilai formula
-        log_debug("Setting up nilai formula")
+        log_info("Setting up nilai formula")
         start_time = datetime.datetime.now()
         komponen_df.loc[:, "nilai_formula"] = komponen_df["formula"].apply(
             lambda x: replace_formula_to_variable(x)
         )
         komponen_df = calculate_nilai_formula(
             komponen_df, master_row, maksimal_potongan)
-        log_debug(f"Finished setting up nilai formula in {datetime.datetime.now() - start_time}\n")
+        log_info(f"Finished setting up nilai formula in {datetime.datetime.now() - start_time}\n")
 
         komponen_df["nilai"] = komponen_df["nilai"].apply(
             lambda x: 0 if pd.isna(x) else x)
@@ -290,7 +290,7 @@ def compare_with_latest_gaji(root_batch_id: str, master_data: pd.DataFrame):
     """
     Compare the current gaji with the latest gaji.
     """
-    log_debug("Comparing with latest gaji")
+    log_info("Comparing with latest gaji")
     start_time = datetime.datetime.now()
     periode = root_batch_id.split("-")[0]
     periode_date = datetime.datetime.strptime(periode, "%Y%m").date()
@@ -300,7 +300,7 @@ def compare_with_latest_gaji(root_batch_id: str, master_data: pd.DataFrame):
     latest_batch_master_data = pd.DataFrame(
         fetch_gaji_batch_master_by_periode(prev_month))
     if latest_batch_master_data.empty:
-        log_debug("No latest gaji batch master data found\n")
+        log_info("No latest gaji batch master data found\n")
         return
 
     different_gaji = []
@@ -315,4 +315,4 @@ def compare_with_latest_gaji(root_batch_id: str, master_data: pd.DataFrame):
     if different_gaji:
         update_different_gaji_batch_master(different_gaji)
 
-    log_debug(f"Comparing with latest gaji finished in {datetime.datetime.now() - start_time}")
+    log_info(f"Comparing with latest gaji finished in {datetime.datetime.now() - start_time}")
