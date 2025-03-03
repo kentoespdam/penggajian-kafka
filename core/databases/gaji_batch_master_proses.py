@@ -56,6 +56,16 @@ def fetch_gaji_batch_master_proses_by_master_batch_id(root_batch_id: str) -> lis
             cursor.execute(query, (root_batch_id,))
             return cursor.fetchall()
 
+def fetch_gaji_batch_master_proses_by_master_id(master_id:int)->list:
+    query="""
+        SELECT * FROM gaji_batch_master_proses gbp
+        WHERE gbp.master_batch_id=%s
+        """
+    with get_connection_pool() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(query,(master_id,))
+            return cursor.fetchall()
+
 
 def get_nilai_komponen(daftar_proses_gaji_pegawai: pd.DataFrame, master_batch_id: int, kode: str):
     result = daftar_proses_gaji_pegawai[(daftar_proses_gaji_pegawai["master_batch_id"] == master_batch_id) & (

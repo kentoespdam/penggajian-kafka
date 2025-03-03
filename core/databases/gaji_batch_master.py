@@ -49,7 +49,7 @@ def fetch_raw_gaji_master_batch() -> list:
             return cursor.fetchall()
 
 
-def fetch_gaji_batch_master_data_by_root_batch_id(root_batch_id: str) -> list:
+def fetch_gaji_batch_master_data_by_root_batch_id(root_batch_id: str, master_batch_id: str = None) -> list:
     query = """
         SELECT
             gbm.id,
@@ -57,35 +57,44 @@ def fetch_gaji_batch_master_data_by_root_batch_id(root_batch_id: str) -> list:
             gbm.pegawai_id,
             gbm.nipam,
             gbm.nama,
-            gbm.gaji_pokok, 
-            gbm.golongan_id, 
+            peg.status_pegawai,
+            gbm.gaji_pokok,
+            gbm.phdp,
+            gbm.golongan_id,
+            gbm.level_id,
+            gbm.gaji_profil_id,
+            gbm.kode_pajak,
             gbm.jml_jiwa, 
             gbm.jml_tanggungan, 
-            gbm.kode_pajak, 
-            gbm.level_id, 
-            gbm.phdp, 
             gbm.status_kawin, 
-            gbm.status_pegawai, 
-            gbm.gaji_profil_id, 
-            gbm.jabatan_id, 
-            gbm.organisasi_id, 
-            gbm.penghasilan_kotor, 
-            gbm.total_tambahan, 
-            gbm.total_potongan, 
-            gbm.pembulatan, 
-            gbm.penghasilan_bersih, 
+            peg.is_askes,
             peg.rumah_dinas_id,
-            peg.is_askes
+            gbm.penghasilan_kotor, 
+            gbm.total_potongan, 
+            gbm.total_add_tambahan, 
+            gbm.total_add_potongan, 
+            gbm.penghasilan_bersih, 
+            gbm.penghasilan_bersih2, 
+            gbm.pembulatan, 
+            gbm.pembulatan2, 
+            gbm.penghasilan_bersih_final,
+            gbm.penghasilan_bersih_final2,
+            gbm.pajak
         FROM
             gaji_batch_master AS gbm
         LEFT JOIN pegawai AS peg ON gbm.pegawai_id = peg.id
         WHERE 
             gbm.root_batch_id = %s
     """
+    params = (root_batch_id)
+
+    if master_batch_id:
+        query += " AND gbm.id = %s"
+        params = (root_batch_id, master_batch_id)
 
     with get_connection_pool() as conn:
         with conn.cursor() as cursor:
-            cursor.execute(query, (root_batch_id,))
+            cursor.execute(query, params)
             return cursor.fetchall()
 
 
@@ -110,10 +119,12 @@ def fetch_gaji_batch_master_by_periode(periode: str) -> list:
             gbm.jabatan_id, 
             gbm.organisasi_id, 
             gbm.penghasilan_kotor, 
-            gbm.total_tambahan, 
             gbm.total_potongan, 
-            gbm.pembulatan, 
+            gbm.total_add_tambahan, 
+            gbm.total_add_potongan, 
             gbm.penghasilan_bersih, 
+            gbm.pembulatan, 
+            gbm.penghasilan_bersih_final, 
             peg.rumah_dinas_id,
             peg.is_askes
         FROM
@@ -166,10 +177,14 @@ def save_gaji_batch_master(data: pd.DataFrame) -> None:
         row["created_by"],
         row["updated_by"],
         row["penghasilan_kotor"],
-        row["total_tambahan"],
         row["total_potongan"],
-        row["pembulatan"],
+        row["total_add_tambahan"],
+        row["total_add_potongan"],
         row["penghasilan_bersih"],
+        row["pembulatan"],
+        row["penghasilan_bersih_final"],
+        row["pajak"],
+        False,
     ) for _, row in data.iterrows()]
 
     query = """
@@ -177,16 +192,18 @@ def save_gaji_batch_master(data: pd.DataFrame) -> None:
             root_batch_id, periode, pegawai_id, nipam, nama,
             golongan_id, golongan, pangkat, jabatan_id, nama_jabatan,
             level_id, organisasi_id, nama_organisasi, status_pegawai, gaji_profil_id,
-            gaji_pokok, phdp, status_kawin, jml_tanggungan, gaji_pendapatan_non_pajak_id, kode_pajak, 
-            jml_jiwa, created_by, updated_by, penghasilan_kotor, total_tambahan, 
-            total_potongan, pembulatan, penghasilan_bersih
+            gaji_pokok, phdp, status_kawin, jml_tanggungan, gaji_pendapatan_non_pajak_id, 
+            kode_pajak, jml_jiwa, created_by, updated_by, penghasilan_kotor, 
+            total_potongan, total_add_tambahan, total_add_potongan, penghasilan_bersih, pembulatan, 
+            penghasilan_bersih_final, pajak, is_different
         ) VALUES (
             %s, %s, %s, %s, %s,
             %s, %s, %s, %s, %s,
             %s, %s, %s, %s, %s,
             %s, %s, %s, %s, %s,
             %s, %s, %s, %s, %s,
-            %s, %s, %s, %s
+            %s, %s, %s, %s, %s,
+            %s, %s, %s
         )
         """
 
@@ -200,20 +217,32 @@ def save_gaji_batch_master(data: pd.DataFrame) -> None:
 def update_gaji_batch_master(data: pd.DataFrame) -> None:
     update_data = [(
         row["penghasilan_kotor"],
-        row["total_tambahan"],
         row["total_potongan"],
-        row["pembulatan"],
+        row["total_add_tambahan"],
+        row["total_add_potongan"],
         row["penghasilan_bersih"],
+        row["penghasilan_bersih2"],
+        row["pembulatan"],
+        row["pembulatan2"],
+        row["penghasilan_bersih_final"],
+        row["penghasilan_bersih_final2"],
+        row["pajak"],
         row["id"],
     ) for _, row in data.iterrows()]
 
     query = """
             UPDATE gaji_batch_master SET
                 penghasilan_kotor = %s,
-                total_tambahan = %s,
                 total_potongan = %s,
+                total_add_tambahan = %s,
+                total_add_potongan = %s,
+                penghasilan_bersih = %s,
+                penghasilan_bersih2 = %s,
                 pembulatan = %s,
-                penghasilan_bersih = %s
+                pembulatan2 = %s,
+                penghasilan_bersih_final = %s,
+                penghasilan_bersih_final2 = %s,
+                pajak = %s
             WHERE id = %s
         """
 
@@ -245,24 +274,18 @@ def fetch_daftar_gaji_pegawai(root_batch_id: str) -> list:
         SELECT
             gbm.id,
             gbm.nipam,
-            gbm.nama,
-            peg.status_pegawai,
-            gbm.golongan,
-            gbm.pangkat,
-            gbm.jml_tanggungan,
-            gbm.jml_jiwa,
-            gbm.gaji_pokok,
-            gbm.penghasilan_bersih,
-            org.id AS organisasi_id,
-            org.kode AS kode_organisasi,
-            org.nama AS nama_organisasi,
-            gbm.level_id,
-            gbp.master_batch_id,
-            gbp.kode,
-            gbp.jenis_gaji,
-            gbp.nilai,
-            gbp.nama AS uraian,
-            gbm.is_different
+            gbm.gaji_pokok, 
+            gbm.golongan_id, 
+            gbm.jml_jiwa, 
+            gbm.jml_tanggungan, 
+            gbm.status_kawin, 
+            gbm.penghasilan_kotor, 
+            gbm.total_potongan, 
+            gbm.total_add_tambahan, 
+            gbm.total_add_potongan, 
+            gbm.penghasilan_bersih, 
+            gbm.pembulatan, 
+            gbm.penghasilan_bersih_final 
         FROM
             gaji_batch_master AS gbm
             INNER JOIN pegawai AS peg ON gbm.pegawai_id = peg.id 

@@ -107,10 +107,12 @@ def process_master(root_batch_id: str) -> bool:
         created_by="system",
         updated_by="system",
         penghasilan_kotor=0,
-        total_tambahan=0,
         total_potongan=0,
+        total_add_tambahan=0,
+        total_add_potongan=0,
+        penghasilan_bersih=0,
         pembulatan=0,
-        penghasilan_bersih=0
+        penghasilan_bersih_final=0
     )
     raw_salary_data["golongan_id"] = raw_salary_data.apply(lambda x: 1 if x["status_pegawai"] in {
                                                            STATUS_PEGAWAI.CALON_HONORER.value, STATUS_PEGAWAI.HONORER.value} else x["golongan_id"], axis=1)
