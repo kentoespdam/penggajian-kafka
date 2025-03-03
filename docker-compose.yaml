@@ -1,5 +1,5 @@
 volumes:
-  penggajian_kafka_excel:
+  penggajian_kafka:
 
 services:
   penggajian_kafka:
