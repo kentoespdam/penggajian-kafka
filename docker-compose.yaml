@@ -1,3 +1,6 @@
+volumes:
+  penggajian_kafka_excel:
+
 services:
   penggajian_kafka:
     container_name: Penggajian-Kafka
@@ -6,3 +9,5 @@ services:
       - "81:80"
     env_file:
       - .env
+    volumes:
+      - penggajian_kafka:/app/result_excel
