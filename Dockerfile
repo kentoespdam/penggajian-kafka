@@ -11,9 +11,9 @@ FROM base AS runner
 WORKDIR /app
 COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
-COPY core .
-COPY excel_template .
-COPY main.py .
+COPY core ./core
+COPY excel_template ./excel_template
+COPY main.py ./main.py
 RUN mkdir logs result_excel
 RUN touch logs/penggajian.log
 RUN rm -rf wheelhouse
