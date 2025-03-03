@@ -10,6 +10,7 @@ from core.helpers.himpunan_gaji.himpunan_gaji_direksi import generate_direksi_sh
 from core.helpers.himpunan_gaji.himpunan_gaji_kontrak import generate_kontrak_sheets
 from core.helpers.himpunan_gaji.himpunan_gaji_pegawai import generate_organisasi_sheet
 
+
 def build(root_batch_id: str):
     log_info(f"generate himpunan gaji excel {root_batch_id}")
     organisasi_list = pd.DataFrame(fetch_organisasi_by_level([4]))
@@ -27,8 +28,10 @@ def build(root_batch_id: str):
             kode_organisasi
         with unique nipam
     """
-    daftar_gaji_pegawai = raw_daftar_gaji_pegawai[["id", "nipam", "nama", "status_pegawai", "golongan", "pangkat", "jml_tanggungan",
-                                                   "jml_jiwa", "organisasi_id", "kode_organisasi", "nama_organisasi", "level_id", "is_different"]].drop_duplicates(subset=["nipam"]).reset_index(drop=True)
+    daftar_gaji_pegawai = raw_daftar_gaji_pegawai[[
+        "id", "nipam", "nama", "status_pegawai", "golongan", "pangkat", "jml_tanggungan",
+        "jml_jiwa", "organisasi_id", "kode_organisasi", "nama_organisasi", "level_id", "is_different"
+    ]].drop_duplicates(subset=["nipam"]).reset_index(drop=True)
     daftar_gaji_pegawai["golongan"] = daftar_gaji_pegawai["golongan"].apply(
         lambda x: "" if x is None else x)
     daftar_gaji_pegawai["pangkat"] = daftar_gaji_pegawai["pangkat"].apply(

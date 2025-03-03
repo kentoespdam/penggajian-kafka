@@ -274,8 +274,16 @@ def fetch_daftar_gaji_pegawai(root_batch_id: str) -> list:
         SELECT
             gbm.id,
             gbm.nipam,
+            gbm.nama,
+            gbm.status_pegawai,
             gbm.gaji_pokok, 
-            gbm.golongan_id, 
+            org.id AS organisasi_id,
+            org.kode AS kode_organisasi,
+            org.nama AS nama_organisasi,
+            gbm.golongan_id,
+            gbm.golongan,
+            gbm.pangkat,
+            gbm.level_id,
             gbm.jml_jiwa, 
             gbm.jml_tanggungan, 
             gbm.status_kawin, 
@@ -285,7 +293,13 @@ def fetch_daftar_gaji_pegawai(root_batch_id: str) -> list:
             gbm.total_add_potongan, 
             gbm.penghasilan_bersih, 
             gbm.pembulatan, 
-            gbm.penghasilan_bersih_final 
+            gbm.penghasilan_bersih_final,
+            gbm.is_different,
+            gbp.master_batch_id,
+            gbp.kode,
+            gbp.jenis_gaji,
+            gbp.nilai,
+            gbp.nama AS uraian
         FROM
             gaji_batch_master AS gbm
             INNER JOIN pegawai AS peg ON gbm.pegawai_id = peg.id 
