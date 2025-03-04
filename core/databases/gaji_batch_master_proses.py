@@ -2,6 +2,14 @@ from core.config import get_connection_pool
 import pandas as pd
 
 
+def fetch_gaji_batch_master_proses_by_master_batch_id(master_batch_id: int) -> list:
+    query = "SELECT * FROM gaji_batch_master_proses WHERE master_batch_id = %s"
+    with get_connection_pool() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(query, (master_batch_id,))
+            return cursor.fetchall()
+
+
 def delete_gaji_batch_master_proses_by_master_batch_id(master_batch_id: list) -> None:
     query = "DELETE FROM gaji_batch_master_proses WHERE master_batch_id IN %s"
     with get_connection_pool() as connection:
@@ -39,31 +47,14 @@ def save_gaji_batch_master_proses(dataframe: pd.DataFrame) -> None:
             conn.commit()
 
 
-def fetch_gaji_batch_master_proses_by_master_batch_id(root_batch_id: str) -> list:
+def fetch_gaji_batch_master_proses_by_master_id(master_id: int) -> list:
     query = """
-        SELECT
-            gbp.master_batch_id, gbp.kode, gbp.jenis_gaji, gbp.nilai
-        FROM
-            gaji_batch_master_proses gbp
-        INNER JOIN
-            gaji_batch_master gbm ON gbp.master_batch_id = gbm.id
-        WHERE
-            gbm.root_batch_id = %s
-    """
-
-    with get_connection_pool() as conn:
-        with conn.cursor() as cursor:
-            cursor.execute(query, (root_batch_id,))
-            return cursor.fetchall()
-
-def fetch_gaji_batch_master_proses_by_master_id(master_id:int)->list:
-    query="""
         SELECT * FROM gaji_batch_master_proses gbp
         WHERE gbp.master_batch_id=%s
         """
     with get_connection_pool() as conn:
         with conn.cursor() as cursor:
-            cursor.execute(query,(master_id,))
+            cursor.execute(query, (master_id,))
             return cursor.fetchall()
 
 

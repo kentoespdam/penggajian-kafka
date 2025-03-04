@@ -49,6 +49,17 @@ def fetch_raw_gaji_master_batch() -> list:
             return cursor.fetchall()
 
 
+def fetch_gaji_batch_master_by_id(gaji_batch_master_id: int) -> tuple:
+    """
+    Fetch GajiBatchMaster by ID.
+    """
+    query = "SELECT * FROM gaji_batch_master WHERE id = %s"
+    with get_connection_pool() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(query, (gaji_batch_master_id,))
+            return cursor.fetchone()
+
+
 def fetch_gaji_batch_master_data_by_root_batch_id(root_batch_id: str, master_batch_id: str = None) -> list:
     query = """
         SELECT
