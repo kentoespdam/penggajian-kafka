@@ -6,7 +6,7 @@ WORKDIR /app
 COPY wheelhouse ./wheelhouse
 COPY requirements.txt .
 RUN pip install --no-cache-dir --find-links=wheelhouse --only-binary=:all: -r requirements.txt
-RUN pip install --no-cache-dir swifter
+
 FROM base AS runner
 WORKDIR /app
 COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
