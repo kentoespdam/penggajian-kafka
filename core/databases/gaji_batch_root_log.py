@@ -3,11 +3,11 @@ from icecream import ic
 
 
 def save_batch_root_error_logs(error_pegawai_list: list):
-    update_data = [(row["root_batch_id"], row["nipam"],
+    update_data = [(row["batch_root_id"], row["nipam"],
                     row["nama"], row["notes"]) for row in error_pegawai_list]
     query = """
             INSERT INTO gaji_batch_root_error_logs(
-                root_batch_id,
+                batch_root_id,
                 nipam,
                 nama,
                 notes

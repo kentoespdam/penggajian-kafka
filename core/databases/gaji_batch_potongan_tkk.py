@@ -6,7 +6,7 @@ from core.databases.riwayat_sp import fetch_riwayat_sp
 from core.enums import STATUS_PEGAWAI, JENIS_SP
 
 
-def fetch_all_gaji_batch_potongan_tkk_by_root_batch_id(root_batch_id: str):
+def fetch_all_gaji_batch_potongan_tkk_by_batch_root_id(batch_root_id: str):
     query = """
         SELECT nipam, sum(potongan) AS potongan 
         FROM 
@@ -18,18 +18,18 @@ def fetch_all_gaji_batch_potongan_tkk_by_root_batch_id(root_batch_id: str):
         """
     with get_connection_pool() as connection:
         with connection.cursor() as cursor:
-            cursor.execute(query, (root_batch_id,))
+            cursor.execute(query, (batch_root_id,))
             return cursor.fetchall()
 
 
-def fetch_gaji_potongan_tkk_by_root_batch_id_and_nipam(root_batch_id: str, nipam: str):
+def fetch_gaji_potongan_tkk_by_batch_root_id_and_nipam(batch_root_id: str, nipam: str):
     query = """
             SELECT sum(potongan) AS potongan 
             FROM gaji_batch_potongan_tkk 
             WHERE batch_id = %s AND nipam = %s """
     with get_connection_pool() as connection:
         with connection.cursor() as cursor:
-            cursor.execute(query, (root_batch_id, nipam))
+            cursor.execute(query, (batch_root_id, nipam))
             return cursor.fetchone()
 
 
@@ -63,9 +63,9 @@ def fetch_gaji_potongan_tkk_by_status_pegawai(status_pegawai: int, level_id: int
             return cursor.fetchone()
 
 
-def get_jml_pot_tkk(root_batch_id: str, pegawai_id: int, nipam: str, status_pegawai: int):
+def get_jml_pot_tkk(batch_root_id: str, pegawai_id: int, nipam: str, status_pegawai: int):
     jumlah_potongan = 0
-    periode = root_batch_id.split("-")[0]
+    periode = batch_root_id.split("-")[0]
     date_until = datetime.date(int(periode[0:4]), int(periode[4:6]), 20)
     timedelta_prev_month = datetime.timedelta(days=date_until.day)
     date_from = (date_until-timedelta_prev_month).strftime("%Y-%m-21")
@@ -88,8 +88,8 @@ def get_jml_pot_tkk(root_batch_id: str, pegawai_id: int, nipam: str, status_pega
 
     if jumlah_potongan > -1:
         # check potongan tkk
-        potongan_tkk = fetch_gaji_potongan_tkk_by_root_batch_id_and_nipam(
-            root_batch_id, nipam)
+        potongan_tkk = fetch_gaji_potongan_tkk_by_batch_root_id_and_nipam(
+            batch_root_id, nipam)
         if potongan_tkk["potongan"]:
             jumlah_potongan += int(potongan_tkk["potongan"])
 

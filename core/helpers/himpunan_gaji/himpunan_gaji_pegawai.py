@@ -39,7 +39,7 @@ def generate_organisasi_sheet(
 
         pegawai_id_list = pegawai_df["id"].tolist()
         komponen_gaji_df_organisasi = komponen_gaji_df[
-            komponen_gaji_df["master_batch_id"].isin(pegawai_id_list)
+            komponen_gaji_df["batch_master_id"].isin(pegawai_id_list)
         ].reset_index(drop=True)
 
         generate_sheet_per_organisasi(

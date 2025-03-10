@@ -1,12 +1,12 @@
 import datetime
 from core.config import log_error, log_info
-from core.databases.gaji_batch_master import fetch_gaji_batch_master_by_periode, fetch_gaji_batch_master_data_by_root_batch_id, reset_different_gaji_batch_master_as_false, update_different_gaji_batch_master, update_gaji_batch_master
-from core.databases.gaji_batch_master_proses import delete_gaji_batch_master_proses_by_master_batch_id, save_gaji_batch_master_proses
+from core.databases.gaji_batch_master import fetch_gaji_batch_master_by_periode, fetch_gaji_batch_master_data_by_batch_root_id, reset_different_gaji_batch_master_as_false, update_different_gaji_batch_master, update_gaji_batch_master
+from core.databases.gaji_batch_master_proses import delete_gaji_batch_master_proses_by_batch_master_id, save_gaji_batch_master_proses
 from core.databases.gaji_batch_root import update_status_gaji_batch_root
 from core.databases.gaji_komponen import fetch_gaji_komponen
 from icecream import ic
 import pandas as pd
-from core.databases.gaji_batch_potongan_tkk import calculate_jml_pot_tkk, fetch_all_gaji_batch_potongan_tkk_by_root_batch_id, fetch_all_gaji_potongan_tkk, filter_gaji_potongan_tkk
+from core.databases.gaji_batch_potongan_tkk import calculate_jml_pot_tkk, fetch_all_gaji_batch_potongan_tkk_by_batch_root_id, fetch_all_gaji_potongan_tkk, filter_gaji_potongan_tkk
 from core.databases.gaji_parameter import fetch_parameter_setting_data
 from core.databases.gaji_pendapatan_non_pajak import fetch_all_gaji_pendapatan_non_pajak, filter_gaji_pendapatan_non_pajak
 from core.databases.gaji_tunjangan import fetch_all_tunjangan_data, filter_tunjangan_data
@@ -23,19 +23,19 @@ from core.helper import replace_formula_to_variable, replace_formula_with_values
 """
 
 
-def calculate_gaji_detail(root_batch_id: str) -> bool:
+def calculate_gaji_detail(batch_root_id: str) -> bool:
     """
     Calculate komponen gaji detail for given root batch ID.
 
     Args:
-        root_batch_id (str): Root batch ID.
+        batch_root_id (str): Root batch ID.
 
     Returns:
         bool: True if success, False if failed.
     """
-    log_info(f"calculate gaji detail {root_batch_id}\n")
+    log_info(f"calculate gaji detail {batch_root_id}\n")
     gaji_batch_master_data = pd.DataFrame(
-        fetch_gaji_batch_master_data_by_root_batch_id(root_batch_id))
+        fetch_gaji_batch_master_data_by_batch_root_id(batch_root_id))
 
     if gaji_batch_master_data.empty:
         return False
@@ -44,22 +44,22 @@ def calculate_gaji_detail(root_batch_id: str) -> bool:
         lambda x: False if x is None else bool(int.from_bytes(x, "little")))
 
     gbm = processing_gaji_komponen_detail(
-        root_batch_id, gaji_batch_master_data)
+        batch_root_id, gaji_batch_master_data)
     gbm["penghasilan_bersih2"] = 0
     gbm["pembulatan2"] = 0
     gbm["penghasilan_bersih_final2"] = 0
 
-    compare_with_latest_gaji(root_batch_id, gbm)
+    compare_with_latest_gaji(batch_root_id, gbm)
     update_gaji_batch_master(gbm)
 
     update_status_gaji_batch_root(
-        root_batch_id=root_batch_id,
+        batch_root_id,
         status_process=EProsesGaji.WAIT_VERIFICATION_PHASE_1.value
     )
     return True
 
 
-def processing_gaji_komponen_detail(root_batch_id: str, gaji_batch_master_data: pd.DataFrame):
+def processing_gaji_komponen_detail(batch_root_id: str, gaji_batch_master_data: pd.DataFrame):
     """
     Set up gaji komponen detail for given gaji batch master data.
 
@@ -68,7 +68,7 @@ def processing_gaji_komponen_detail(root_batch_id: str, gaji_batch_master_data: 
     """
     log_info("Setting up gaji komponen detail")
     gbm, mbp = generate_gaji_batch_master_proses_data(
-        root_batch_id, gaji_batch_master_data)
+        batch_root_id, gaji_batch_master_data)
 
     gbm["penghasilan_kotor"] = gbm.apply(lambda x: filter_komponen_by_kode(
         mbp, "PENGHASILAN_KOTOR", x["id"])["nilai"].sum(), axis=1)
@@ -82,28 +82,28 @@ def processing_gaji_komponen_detail(root_batch_id: str, gaji_batch_master_data: 
         mbp, "PEMBULATAN", x["id"])["nilai"].sum(), axis=1)
     gbm["penghasilan_bersih_final"] = gbm.apply(lambda x: filter_komponen_by_kode(
         mbp, "PENGHASILAN_BERSIH_FINAL", x["id"])["nilai"].sum(), axis=1)
-    gbm["pajak"]=gbm.apply(lambda x: round(filter_komponen_by_kode(
+    gbm["pajak"] = gbm.apply(lambda x: round(filter_komponen_by_kode(
         mbp, "POT_PPH21", x["id"])["nilai"].sum()), axis=1)
 
-    list_master_row_id = mbp["master_batch_id"].unique().tolist()
+    list_master_row_id = mbp["batch_master_id"].unique().tolist()
     # save komponen_df to database
-    delete_gaji_batch_master_proses_by_master_batch_id(list_master_row_id)
+    delete_gaji_batch_master_proses_by_batch_master_id(list_master_row_id)
     save_gaji_batch_master_proses(mbp)
     return gbm
 
 
-def filter_komponen_by_kode(komponen: pd.DataFrame, kode: str, master_batch_id: int):
-    return komponen[(komponen["kode"] == kode) & (komponen["master_batch_id"] == master_batch_id)].reset_index(drop=True)
+def filter_komponen_by_kode(komponen: pd.DataFrame, kode: str, batch_master_id: int):
+    return komponen[(komponen["kode"] == kode) & (komponen["batch_master_id"] == batch_master_id)].reset_index(drop=True)
 
 
-def filter_komponen_by_jenis_gaji(komponen: pd.DataFrame, jenis_gaji: str, master_batch_id: int):
+def filter_komponen_by_jenis_gaji(komponen: pd.DataFrame, jenis_gaji: str, batch_master_id: int):
     result = komponen[(komponen["jenis_gaji"] == jenis_gaji) & (
-        komponen["master_batch_id"] == master_batch_id) & (komponen["kode"] != "GP")].reset_index(drop=True)
+        komponen["batch_master_id"] == batch_master_id) & (komponen["kode"] != "GP")].reset_index(drop=True)
     ic(result[["kode", "jenis_gaji", "nilai"]])
     return result
 
 
-def generate_gaji_batch_master_proses_data(root_batch_id: str, gaji_batch_master_data: pd.DataFrame):
+def generate_gaji_batch_master_proses_data(batch_root_id: str, gaji_batch_master_data: pd.DataFrame):
     maksimal_potongan = {
         "jpn": fetch_parameter_setting_data("maksimal_potongan_jpn")["nominal"],
         "askes": fetch_parameter_setting_data("maksimal_potongan_askes")["nominal"]
@@ -114,14 +114,14 @@ def generate_gaji_batch_master_proses_data(root_batch_id: str, gaji_batch_master
     gaji_potongan_data = pd.DataFrame(fetch_all_gaji_potongan_tkk())
 
     # get data riwayat SP
-    periode = root_batch_id.split("-")[0]
+    periode = batch_root_id.split("-")[0]
     date_until = datetime.date(int(periode[0:4]), int(periode[4:6]), 20)
     timedelta_prev_month = datetime.timedelta(days=date_until.day)
     date_from = (date_until-timedelta_prev_month).strftime("%Y-%m-21")
     riwayat_sp_data = pd.DataFrame(
         fetch_all_riwayat_sp_by_date(date_from, date_until))
     gaji_potongan_tkk_data = pd.DataFrame(
-        fetch_all_gaji_batch_potongan_tkk_by_root_batch_id(root_batch_id))
+        fetch_all_gaji_batch_potongan_tkk_by_batch_root_id(batch_root_id))
 
     gaji_pendapatan_non_pajak_data = pd.DataFrame(
         fetch_all_gaji_pendapatan_non_pajak())
@@ -133,7 +133,7 @@ def generate_gaji_batch_master_proses_data(root_batch_id: str, gaji_batch_master
         komponen_data = all_komponen_gaji[all_komponen_gaji["profil_gaji_id"]
                                           == master_row["gaji_profil_id"]]
         komponen_df = pd.DataFrame(komponen_data).reset_index(drop=True)
-        komponen_df["master_batch_id"] = master_row["id"]
+        komponen_df["batch_master_id"] = master_row["id"]
 
         # Convert byte to bool for 'is_reference' field
         komponen_df["is_reference"] = komponen_df["is_reference"].apply(
@@ -296,13 +296,13 @@ def calculate_nilai_formula(komponen_gaji: pd.DataFrame, master_data: pd.DataFra
     return komponen_gaji
 
 
-def compare_with_latest_gaji(root_batch_id: str, master_data: pd.DataFrame):
+def compare_with_latest_gaji(batch_root_id: str, master_data: pd.DataFrame):
     """
     Compare the current gaji with the latest gaji.
     """
     log_info("Comparing with latest gaji")
     start_time = datetime.datetime.now()
-    periode = root_batch_id.split("-")[0]
+    periode = batch_root_id.split("-")[0]
     periode_date = datetime.datetime.strptime(periode, "%Y%m").date()
     # minus 1 month
     prev_month = periode_date - datetime.timedelta(days=periode_date.day)
@@ -320,8 +320,8 @@ def compare_with_latest_gaji(root_batch_id: str, master_data: pd.DataFrame):
         for latest_gaji in latest_batch_master_data.itertuples():
             if master_data["pegawai_id"] == latest_gaji["pegawai_id"] and master_data["gaji_pokok"] != latest_gaji["gaji_pokok"]:
                 different_gaji.append(
-                    (master_data["root_batch_id"], master_data["pegawai_id"]))
-    reset_different_gaji_batch_master_as_false(root_batch_id)
+                    (master_data["batch_root_id"], master_data["pegawai_id"]))
+    reset_different_gaji_batch_master_as_false(batch_root_id)
     if different_gaji:
         update_different_gaji_batch_master(different_gaji)
 

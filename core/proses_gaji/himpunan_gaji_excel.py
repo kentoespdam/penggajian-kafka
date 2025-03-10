@@ -11,12 +11,12 @@ from core.helpers.himpunan_gaji.himpunan_gaji_kontrak import generate_kontrak_sh
 from core.helpers.himpunan_gaji.himpunan_gaji_pegawai import generate_organisasi_sheet
 
 
-def build(root_batch_id: str):
-    log_info(f"generate himpunan gaji excel {root_batch_id}")
+def build(batch_root_id: str):
+    log_info(f"generate himpunan gaji excel {batch_root_id}")
     organisasi_list = pd.DataFrame(fetch_organisasi_by_level([4]))
 
     raw_daftar_gaji_pegawai = pd.DataFrame(
-        fetch_daftar_gaji_pegawai(root_batch_id))
+        fetch_daftar_gaji_pegawai(batch_root_id))
     """
         create new data frame with raw_daftar gaji with column
             nipam,
@@ -37,14 +37,14 @@ def build(root_batch_id: str):
     daftar_gaji_pegawai["pangkat"] = daftar_gaji_pegawai["pangkat"].apply(
         lambda x: "" if x is None else x)
     daftar_proses_gaji_pegawai = raw_daftar_gaji_pegawai[[
-        "master_batch_id", "kode", "jenis_gaji", "nilai", "uraian", "kode_organisasi"]].reset_index(drop=True)
+        "batch_master_id", "kode", "jenis_gaji", "nilai", "uraian", "kode_organisasi"]].reset_index(drop=True)
 
-    generate_excel(root_batch_id, organisasi_list,
+    generate_excel(batch_root_id, organisasi_list,
                    daftar_gaji_pegawai, daftar_proses_gaji_pegawai)
 
 
-def generate_excel(root_batch_id: str, organisasi_list: pd.DataFrame, daftar_gaji_pegawai: pd.DataFrame, daftar_proses_gaji_pegawai: pd.DataFrame):
-    periode = root_batch_id.split("-")[0]
+def generate_excel(batch_root_id: str, organisasi_list: pd.DataFrame, daftar_gaji_pegawai: pd.DataFrame, daftar_proses_gaji_pegawai: pd.DataFrame):
+    periode = batch_root_id.split("-")[0]
     tahun = int(periode[0:4])
     bulan = int(periode[4:6])
     wb = load_workbook("excel_template/daftar_gaji_template.xlsx")
@@ -54,7 +54,7 @@ def generate_excel(root_batch_id: str, organisasi_list: pd.DataFrame, daftar_gaj
     ].reset_index(drop=True)
 
     daftar_proses_gaji_direksi = daftar_proses_gaji_pegawai[
-        daftar_proses_gaji_pegawai["master_batch_id"].isin(
+        daftar_proses_gaji_pegawai["batch_master_id"].isin(
             daftar_gaji_direksi["id"].tolist())
     ].reset_index(drop=True)
 
@@ -86,4 +86,4 @@ def generate_excel(root_batch_id: str, organisasi_list: pd.DataFrame, daftar_gaj
     wb.remove(wb["HG1"])
     wb.active = wb["HG"]
     wb.save(
-        f"result_excel/tabel_gaji_{root_batch_id}.xlsx")
+        f"result_excel/tabel_gaji_{batch_root_id}.xlsx")

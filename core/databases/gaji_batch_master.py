@@ -60,11 +60,11 @@ def fetch_gaji_batch_master_by_id(gaji_batch_master_id: int) -> tuple:
             return cursor.fetchone()
 
 
-def fetch_gaji_batch_master_data_by_root_batch_id(root_batch_id: str, master_batch_id: str = None) -> list:
+def fetch_gaji_batch_master_data_by_batch_root_id(batch_root_id: str, batch_master_id: str = None) -> list:
     query = """
         SELECT
             gbm.id,
-            gbm.root_batch_id, 
+            gbm.batch_root_id, 
             gbm.pegawai_id,
             gbm.nipam,
             gbm.nama,
@@ -95,13 +95,13 @@ def fetch_gaji_batch_master_data_by_root_batch_id(root_batch_id: str, master_bat
             gaji_batch_master AS gbm
         LEFT JOIN pegawai AS peg ON gbm.pegawai_id = peg.id
         WHERE 
-            gbm.root_batch_id = %s
+            gbm.batch_root_id = %s
     """
-    params = (root_batch_id)
+    params = (batch_root_id)
 
-    if master_batch_id:
+    if batch_master_id:
         query += " AND gbm.id = %s"
-        params = (root_batch_id, master_batch_id)
+        params = (batch_root_id, batch_master_id)
 
     with get_connection_pool() as conn:
         with conn.cursor() as cursor:
@@ -113,7 +113,7 @@ def fetch_gaji_batch_master_by_periode(periode: str) -> list:
     query = """
         SELECT
             gbm.id,
-            gbm.root_batch_id, 
+            gbm.batch_root_id, 
             gbm.pegawai_id,
             gbm.nipam,
             gbm.nama,
@@ -153,17 +153,17 @@ def fetch_gaji_batch_master_by_periode(periode: str) -> list:
             return cursor.fetchall()
 
 
-def delete_gaji_batch_master_by_root_batch_id(root_batch_id: str) -> None:
-    query = "DELETE FROM gaji_batch_master WHERE root_batch_id = %s"
+def delete_gaji_batch_master_by_batch_root_id(batch_root_id: str) -> None:
+    query = "DELETE FROM gaji_batch_master WHERE batch_root_id = %s"
     with get_connection_pool() as conn:
         with conn.cursor() as cursor:
-            cursor.execute(query, (root_batch_id,))
+            cursor.execute(query, (batch_root_id,))
             conn.commit()
 
 
 def save_gaji_batch_master(data: pd.DataFrame) -> None:
     update_data = [(
-        row["root_batch_id"],
+        row["batch_root_id"],
         row["periode"],
         row["pegawai_id"],
         row["nipam"],
@@ -200,7 +200,7 @@ def save_gaji_batch_master(data: pd.DataFrame) -> None:
 
     query = """
         INSERT INTO gaji_batch_master (
-            root_batch_id, periode, pegawai_id, nipam, nama,
+            batch_root_id, periode, pegawai_id, nipam, nama,
             golongan_id, golongan, pangkat, jabatan_id, nama_jabatan,
             level_id, organisasi_id, nama_organisasi, status_pegawai, gaji_profil_id,
             gaji_pokok, phdp, status_kawin, jml_tanggungan, gaji_pendapatan_non_pajak_id, 
@@ -222,7 +222,6 @@ def save_gaji_batch_master(data: pd.DataFrame) -> None:
         with conn.cursor() as cursor:
             cursor.executemany(query, update_data)
             conn.commit()
-            ic("update gaji batch master ", cursor.rowcount, "affected rows")
 
 
 def update_gaji_batch_master(data: pd.DataFrame) -> None:
@@ -261,26 +260,25 @@ def update_gaji_batch_master(data: pd.DataFrame) -> None:
         with conn.cursor() as cursor:
             cursor.executemany(query, update_data)
             conn.commit()
-            ic("update gaji batch master ", cursor.rowcount, "affected rows")
 
 
-def reset_different_gaji_batch_master_as_false(root_batch_id: str) -> None:
-    query = "UPDATE gaji_batch_master SET is_different = false WHERE root_batch_id = %s"
+def reset_different_gaji_batch_master_as_false(batch_root_id: str) -> None:
+    query = "UPDATE gaji_batch_master SET is_different = false WHERE batch_root_id = %s"
     with get_connection_pool() as conn:
         with conn.cursor() as cursor:
-            cursor.execute(query, (root_batch_id,))
+            cursor.execute(query, (batch_root_id,))
             conn.commit()
 
 
 def update_different_gaji_batch_master(data: list) -> None:
-    query = "UPDATE gaji_batch_master SET is_different = true WHERE root_batch_id = %s AND pegawai_id = %s"
+    query = "UPDATE gaji_batch_master SET is_different = true WHERE batch_root_id = %s AND pegawai_id = %s"
     with get_connection_pool() as conn:
         with conn.cursor() as cursor:
             cursor.executemany(query, data)
             conn.commit()
 
 
-def fetch_daftar_gaji_pegawai(root_batch_id: str) -> list:
+def fetch_daftar_gaji_pegawai(batch_root_id: str) -> list:
     query = """
         SELECT
             gbm.id,
@@ -306,7 +304,7 @@ def fetch_daftar_gaji_pegawai(root_batch_id: str) -> list:
             gbm.pembulatan, 
             gbm.penghasilan_bersih_final,
             gbm.is_different,
-            gbp.master_batch_id,
+            gbp.batch_master_id,
             gbp.kode,
             gbp.jenis_gaji,
             gbp.nilai,
@@ -314,19 +312,19 @@ def fetch_daftar_gaji_pegawai(root_batch_id: str) -> list:
         FROM
             gaji_batch_master AS gbm
             INNER JOIN pegawai AS peg ON gbm.pegawai_id = peg.id 
-            INNER JOIN gaji_batch_master_proses gbp ON gbm.id = gbp.master_batch_id
+            INNER JOIN gaji_batch_master_proses gbp ON gbm.id = gbp.batch_master_id
             INNER JOIN organisasi AS org ON gbm.organisasi_id = org.id
         WHERE
-            gbm.root_batch_id = %s
+            gbm.batch_root_id = %s
     """
 
     with get_connection_pool() as connection:
         with connection.cursor() as cursor:
-            cursor.execute(query, (root_batch_id,))
+            cursor.execute(query, (batch_root_id,))
             return cursor.fetchall()
 
 
-def fetch_daftar_potongan_gaji_by_root_batch_id(root_batch_id: str) -> list:
+def fetch_daftar_potongan_gaji_by_batch_root_id(batch_root_id: str) -> list:
     query = """
         SELECT
             gbm.id,
@@ -339,10 +337,46 @@ def fetch_daftar_potongan_gaji_by_root_batch_id(root_batch_id: str) -> list:
             gaji_batch_master AS gbm
             INNER JOIN organisasi AS org ON gbm.organisasi_id = org.id
         WHERE
-            gbm.root_batch_id = %s
+            gbm.batch_root_id = %s
     """
 
     with get_connection_pool() as connection:
         with connection.cursor() as cursor:
-            cursor.execute(query, (root_batch_id,))
+            cursor.execute(query, (batch_root_id,))
             return cursor.fetchall()
+
+
+def rollback_additional_gaji_batch_master_by_batch_root_id(batch_root_id: str) -> None:
+    query = """
+        UPDATE gaji_batch_master SET
+            total_add_tambahan = 0,
+            total_add_potongan = 0,
+            penghasilan_bersih2 = 0,
+            pembulatan2 = 0,
+            penghasilan_bersih_final2 = 0
+        WHERE batch_root_id = %s
+    """
+
+    with get_connection_pool() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(query, (batch_root_id,))
+            conn.commit()
+            return f"{conn.affected_rows()} rows affected"
+
+
+def rollback_master_gaji_batch_master_by_batch_root_id(batch_master_id: str) -> None:
+    query = """
+        UPDATE gaji_batch_master SET
+            total_add_tambahan = 0,
+            total_add_potongan = 0,
+            penghasilan_bersih2 = 0,
+            pembulatan2 = 0,
+            penghasilan_bersih_final2 = 0
+        WHERE id = %s
+    """
+
+    with get_connection_pool() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(query, (batch_master_id,))
+            conn.commit()
+            return f"{conn.affected_rows()} rows affected"

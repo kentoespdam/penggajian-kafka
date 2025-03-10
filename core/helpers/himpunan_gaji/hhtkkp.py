@@ -28,14 +28,14 @@ def generate_hhtkkp_sheet(
     gaji_pegawai_df = gaji_pegawai_df[gaji_pegawai_df["kode_organisasi"].isin(
         organisasi_df["kode"].tolist())].reset_index(drop=True)
 
-    komponen_gaji_df = komponen_gaji_df[komponen_gaji_df["master_batch_id"].isin(
+    komponen_gaji_df = komponen_gaji_df[komponen_gaji_df["batch_master_id"].isin(
         gaji_pegawai_df["id"].tolist())].reset_index(drop=True)
 
     row_num = itertools.count(start=12)
     for index, organisasi in organisasi_df.iterrows():
         current_pegawai = gaji_pegawai_df[gaji_pegawai_df["kode_organisasi"].str.startswith(
             organisasi["kode"])].reset_index(drop=True)
-        current_komponen_gaji = komponen_gaji_df[komponen_gaji_df["master_batch_id"].isin(
+        current_komponen_gaji = komponen_gaji_df[komponen_gaji_df["batch_master_id"].isin(
             current_pegawai["id"].tolist())].reset_index(drop=True)
         generate_row(worksheet, next(row_num), current_komponen_gaji,
                      organisasi["nama"], index+1)

@@ -1,9 +1,10 @@
-from core.config import log_debug, log_info
-from core.databases.gaji_batch_master import delete_gaji_batch_master_by_root_batch_id, fetch_raw_gaji_master_batch, save_gaji_batch_master
-from core.databases.gaji_batch_root import delete_batch_root_error_logs_by_root_batch_id, fetch_gaji_batch_root_by_batch_id, update_status_gaji_batch_root
+from core.config import log_info
+from core.databases.gaji_batch_master import delete_gaji_batch_master_by_batch_root_id, fetch_raw_gaji_master_batch, save_gaji_batch_master
+from core.databases.gaji_batch_root import delete_batch_root_error_logs_by_root_id, fetch_gaji_batch_root_by_id, update_status_gaji_batch_root
 from core.databases.gaji_batch_root_log import save_batch_root_error_logs
 from core.enums import STATUS_KAWIN, STATUS_PEGAWAI, EProsesGaji
 import pandas as pd
+
 
 def validate_gaji_master(raw_gaji_master: pd.DataFrame) -> tuple[bool, dict]:
     """
@@ -23,7 +24,7 @@ def validate_gaji_master(raw_gaji_master: pd.DataFrame) -> tuple[bool, dict]:
                 f"missing gaji profil for {row['nipam']} - {row['nama']}")
             summary["error"] += 1
             errors.append({
-                "root_batch_id": row["root_batch_id"],
+                "batch_root_id": row["batch_root_id"],
                 "nipam": row["nipam"],
                 "nama": row["nama"],
                 "notes": "Missing gaji profil"
@@ -36,7 +37,7 @@ def validate_gaji_master(raw_gaji_master: pd.DataFrame) -> tuple[bool, dict]:
             log_info(f"missing golongan for {row['nipam']} - {row['nama']}")
             summary["error"] += 1
             errors.append({
-                "root_batch_id": row["root_batch_id"],
+                "batch_root_id": row["batch_root_id"],
                 "nipam": row["nipam"],
                 "nama": row["nama"],
                 "notes": "Missing golongan"
@@ -47,7 +48,7 @@ def validate_gaji_master(raw_gaji_master: pd.DataFrame) -> tuple[bool, dict]:
             log_info(f"invalid gaji pokok for {row['nipam']} - {row['nama']}")
             summary["error"] += 1
             errors.append({
-                "root_batch_id": row["root_batch_id"],
+                "batch_root_id": row["batch_root_id"],
                 "nipam": row["nipam"],
                 "nama": row["nama"],
                 "notes": "Invalid gaji pokok"
@@ -59,7 +60,7 @@ def validate_gaji_master(raw_gaji_master: pd.DataFrame) -> tuple[bool, dict]:
     if summary["error"] > 0:
         log_info(f"proses gaji master failed {summary}")
         update_status_gaji_batch_root(
-            root_batch_id=row["root_batch_id"],
+            row["batch_root_id"],
             status_process=EProsesGaji.FAILED.value,
             total_pegawai=len(raw_gaji_master),
             notes=summary
@@ -70,40 +71,39 @@ def validate_gaji_master(raw_gaji_master: pd.DataFrame) -> tuple[bool, dict]:
     return True, summary
 
 
-def process_master(root_batch_id: str) -> bool:
-    log_info(f"proses gaji master {root_batch_id}")
+def process_master(batch_root_id: str) -> bool:
+    log_info(f"proses gaji master {batch_root_id}")
 
     # check if root batch id already processed
-    gaji_batch_root = fetch_gaji_batch_root_by_batch_id(root_batch_id)
+    gaji_batch_root = fetch_gaji_batch_root_by_id(batch_root_id)
     if gaji_batch_root is None:
-        log_info(f"root batch id {root_batch_id} not found")
+        log_info(f"root batch id {batch_root_id} not found")
         return False
     if gaji_batch_root["status"] == EProsesGaji.PROSES.value:
-        log_info(f"root batch id {root_batch_id} already processed")
+        log_info(f"root batch id {batch_root_id} already processed")
         return False
 
     log_info("clean up gaji batch master and error logs")
-    delete_batch_root_error_logs_by_root_batch_id(root_batch_id)
-    delete_gaji_batch_master_by_root_batch_id(root_batch_id)
+    delete_batch_root_error_logs_by_root_id(batch_root_id)
+    delete_gaji_batch_master_by_batch_root_id(batch_root_id)
 
     update_status_gaji_batch_root(
-        root_batch_id=root_batch_id, status_process=EProsesGaji.PROSES.value
-    )
+        batch_root_id, status_process=EProsesGaji.PROSES.value)
 
     log_info("fetching raw gaji master")
     raw_salary_data = pd.DataFrame(fetch_raw_gaji_master_batch())
 
     if raw_salary_data.empty:
         update_status_gaji_batch_root(
-            root_batch_id=root_batch_id, status_process=EProsesGaji.FAILED.value
+            batch_root_id, status_process=EProsesGaji.FAILED.value
         )
         return False
 
     log_info("delete exist gaji batch master by root batch id")
 
     raw_salary_data = raw_salary_data.assign(
-        root_batch_id=root_batch_id,
-        periode=root_batch_id.split("-")[0],
+        batch_root_id=batch_root_id,
+        periode=batch_root_id.split("-")[0],
         created_by="system",
         updated_by="system",
         penghasilan_kotor=0,
@@ -112,7 +112,8 @@ def process_master(root_batch_id: str) -> bool:
         total_add_potongan=0,
         penghasilan_bersih=0,
         pembulatan=0,
-        penghasilan_bersih_final=0
+        penghasilan_bersih_final=0,
+        pajak=0
     )
     raw_salary_data["golongan_id"] = raw_salary_data.apply(lambda x: 1 if x["status_pegawai"] in {
                                                            STATUS_PEGAWAI.CALON_HONORER.value, STATUS_PEGAWAI.HONORER.value} else x["golongan_id"], axis=1)
@@ -126,7 +127,7 @@ def process_master(root_batch_id: str) -> bool:
     log_info("saving valid gaji batch master")
     save_gaji_batch_master(raw_salary_data)
     update_status_gaji_batch_root(
-        root_batch_id=root_batch_id, 
+        batch_root_id,
         status_process=EProsesGaji.PROSES.value,
         total_pegawai=len(raw_salary_data),
         notes=summary

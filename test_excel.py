@@ -4,13 +4,11 @@ from core.excel_helper import cell_builder, header_builder
 from core.helper import get_nama_bulan
 import pandas as pd
 from openpyxl import Workbook
-from openpyxl.styles import Font, Alignment, Border, Side
 from openpyxl.worksheet.worksheet import Worksheet
-from icecream import ic
 
 
-def header_value_list(root_batch_id: str):
-    periode = root_batch_id.split("-")[0]
+def header_value_list(batch_root_id: str):
+    periode = batch_root_id.split("-")[0]
     tahun = int(periode[0:4])
     bulan = int(periode[4:6])
     return [

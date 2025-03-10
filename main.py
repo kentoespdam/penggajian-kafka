@@ -5,10 +5,12 @@ from contextlib import asynccontextmanager
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import FastAPI, Response
-from fastapi.responses import StreamingResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 
 from core import cron_tanggungan
-from core.databases.gaji_batch_root import exists_gaji_batch_root_by_batch_id
+from core.databases.gaji_batch_master import rollback_additional_gaji_batch_master_by_batch_root_id
+from core.databases.gaji_batch_master_proses import rollback_additional_gaji_batch_master_proses
+from core.databases.gaji_batch_root import exists_gaji_batch_root_by_id
 from core.proses_gaji import himpunan_gaji_excel, potongan_gaji_excel
 from core.proses_gaji.consumer import consume_proses_gaji
 from core.proses_gaji import additional_gaji
@@ -36,15 +38,15 @@ app = FastAPI(
 )
 
 
-@app.get("/recalculate/{master_batch_id}", status_code=200)
-async def recalculate(master_batch_id: str):
-    additional_gaji.recalculate(master_batch_id)
+@app.get("/recalculate/{batch_master_id}", status_code=200)
+async def recalculate(batch_master_id: str):
+    additional_gaji.recalculate(batch_master_id)
     return Response("Success", status_code=200)
 
 
 @app.get("/export/regenerate/{export_id}", status_code=200)
 async def regenerate(export_id: str):
-    exist = exists_gaji_batch_root_by_batch_id(export_id)
+    exist = exists_gaji_batch_root_by_id(export_id)
     if not exist:
         return Response("Unknown Gaji Batch ID", status_code=404)
 
@@ -84,3 +86,22 @@ async def potongan(export_id: str):
                 "Content-Disposition": f"attachment; filename=potongan_gaji_{export_id}.xlsx"},
             media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
+
+
+@app.delete("/rollback/{root_batch_id}/additional_gaji", status_code=200)
+async def rollback_additional(root_batch_id: str):
+    if not exists_gaji_batch_root_by_id(root_batch_id):
+        return Response("Unknown Gaji Batch ID", status_code=404)
+
+    rollback_additional_gaji_batch_master_proses()
+    result = rollback_additional_gaji_batch_master_by_batch_root_id(root_batch_id)
+    return JSONResponse(result, status_code=200)
+
+@app.delete("/rollback/{batch_master_id}/master_batch")
+async def rollback_master(batch_master_id: str):
+    if not exists_gaji_batch_root_by_id(batch_master_id):
+        return Response("Unknown Gaji Batch ID", status_code=404)
+
+    rollback_additional_gaji_batch_master_proses(batch_master_id)
+    result = rollback_additional_gaji_batch_master_by_batch_root_id(batch_master_id)
+    return JSONResponse(result, status_code=200)

@@ -28,7 +28,7 @@ def generate_hg_sheet(workbook: Workbook, organisasi_df: pd.DataFrame, year: int
         (gaji_pegawai_df["kode_organisasi"].str.startswith(tuple(organisasi_cabang_df["kode"].unique().tolist()))) &
         (gaji_pegawai_df["status_pegawai"] != STATUS_PEGAWAI.KONTRAK.value)
     ].reset_index(drop=True)
-    komponen_cabang_df = komponen_gaji_df[komponen_gaji_df["master_batch_id"].isin(
+    komponen_cabang_df = komponen_gaji_df[komponen_gaji_df["batch_master_id"].isin(
         pegawai_cabang_df["id"])]
     kontrak_cabang_df = kontrak_df[kontrak_df["kode_organisasi"].str.startswith(
         tuple(organisasi_cabang_df["kode"].unique().tolist()))].reset_index(drop=True)
@@ -46,14 +46,14 @@ def generate_hg_sheet(workbook: Workbook, organisasi_df: pd.DataFrame, year: int
 
     # Filter komponen gaji by cabang and pusat
 
-    komponen_kontrak_cabang_df = komponen_gaji_df[komponen_gaji_df["master_batch_id"].isin(
+    komponen_kontrak_cabang_df = komponen_gaji_df[komponen_gaji_df["batch_master_id"].isin(
         kontrak_cabang_df["id"])]
     komponen_kontrak_cabang_df.loc[:,
                                    "kode_organisasi"] = komponen_kontrak_cabang_df["kode_organisasi"].str[:3]
 
-    komponen_pusat_df = komponen_gaji_df[komponen_gaji_df["master_batch_id"].isin(
+    komponen_pusat_df = komponen_gaji_df[komponen_gaji_df["batch_master_id"].isin(
         pegawai_pusat_df["id"])]
-    komponen_kontrak_pusat_df = komponen_gaji_df[komponen_gaji_df["master_batch_id"].isin(
+    komponen_kontrak_pusat_df = komponen_gaji_df[komponen_gaji_df["batch_master_id"].isin(
         kontrak_pusat_df["id"])]
 
     # Generate rows in the worksheet
@@ -235,11 +235,11 @@ def generate_potongan_row(worksheet: Worksheet, row_num: int, organisasi_df: pd.
     org_cabang = organisasi_df[organisasi_df["nama"].str.startswith("CABANG")]
     gaji_pegawai_cabang = gaji_pegawai_df[(gaji_pegawai_df["kode_organisasi"].str.startswith(tuple(org_cabang["kode"].tolist())) &
                                            (gaji_pegawai_df["status_pegawai"] != STATUS_PEGAWAI.KONTRAK.value))]
-    komponen_pegawai_cabang = komponen_gaji_df[komponen_gaji_df["master_batch_id"].isin(
+    komponen_pegawai_cabang = komponen_gaji_df[komponen_gaji_df["batch_master_id"].isin(
         gaji_pegawai_cabang["id"].tolist())]
     gaji_kontrak_cabang = gaji_pegawai_df[(gaji_pegawai_df["kode_organisasi"].str.startswith(tuple(org_cabang["kode"].tolist())) &
                                            (gaji_pegawai_df["status_pegawai"] == STATUS_PEGAWAI.KONTRAK.value))]
-    komponen_kontrak_cabang = komponen_gaji_df[komponen_gaji_df["master_batch_id"].isin(
+    komponen_kontrak_cabang = komponen_gaji_df[komponen_gaji_df["batch_master_id"].isin(
         gaji_kontrak_cabang["id"].tolist())]
 
     # Himpunan Gaji Pusat
@@ -251,11 +251,11 @@ def generate_potongan_row(worksheet: Worksheet, row_num: int, organisasi_df: pd.
         )
         | (gaji_pegawai_df["level_id"].isin([2, 3, 4]))
     ]
-    komponen_pegawai_pusat = komponen_gaji_df[komponen_gaji_df["master_batch_id"].isin(
+    komponen_pegawai_pusat = komponen_gaji_df[komponen_gaji_df["batch_master_id"].isin(
         gaji_pegawai_pusat["id"].tolist())]
     gaji_kontrak_pusat = gaji_pegawai_df[(gaji_pegawai_df["kode_organisasi"].str.startswith(tuple(org_pusat["kode"].tolist())) &
                                           (gaji_pegawai_df["status_pegawai"] == STATUS_PEGAWAI.KONTRAK.value))]
-    komponen_kontrak_pusat = komponen_gaji_df[komponen_gaji_df["master_batch_id"].isin(
+    komponen_kontrak_pusat = komponen_gaji_df[komponen_gaji_df["batch_master_id"].isin(
         gaji_kontrak_pusat["id"].tolist())]
 
     def build_row(komponen_pusat: pd.DataFrame, komponen_cabang: pd.DataFrame, kode: str, description: str) -> None:

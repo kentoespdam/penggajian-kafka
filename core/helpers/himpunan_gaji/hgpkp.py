@@ -26,7 +26,7 @@ def generate_hgpkp_sheet(
     # Generate direksi row
     direksi_ids = gaji_pegawai_df[gaji_pegawai_df["level_id"].isin(
         [2, 3, 4])]["id"].tolist()
-    komponen_gaji_direksi = komponen_gaji_df[komponen_gaji_df["master_batch_id"].isin(
+    komponen_gaji_direksi = komponen_gaji_df[komponen_gaji_df["batch_master_id"].isin(
         direksi_ids)].reset_index(drop=True)
     row_num = itertools.count(generate_row(worksheet, next(
         row_num), komponen_gaji_direksi, len(direksi_ids), "DIREKSI", next(urut)))
@@ -38,7 +38,7 @@ def generate_hgpkp_sheet(
         pegawai_ids = gaji_pegawai_df[(gaji_pegawai_df["kode_organisasi"].str.startswith(organisasi["kode"])) &
                                       (gaji_pegawai_df["status_pegawai"] != STATUS_PEGAWAI.KONTRAK.value)]["id"].tolist()
 
-        komponen_gaji_organisasi = komponen_gaji_df[komponen_gaji_df["master_batch_id"].isin(
+        komponen_gaji_organisasi = komponen_gaji_df[komponen_gaji_df["batch_master_id"].isin(
             pegawai_ids)].reset_index(drop=True)
         row_num = itertools.count(generate_row(worksheet, next(
             row_num), komponen_gaji_organisasi, len(pegawai_ids), organisasi["nama"], next(urut)))
@@ -48,7 +48,7 @@ def generate_hgpkp_sheet(
                                   (gaji_pegawai_df["kode_organisasi"].str.startswith(tuple(organisasi_wt_cabang["kode"].unique().tolist())) |
                                    (gaji_pegawai_df["level_id"].isin([2, 3, 4])))]
     all_pegawai_ids = all_pegawai["id"].tolist()
-    komponen_gaji_pegawai = komponen_gaji_df[komponen_gaji_df["master_batch_id"].isin(
+    komponen_gaji_pegawai = komponen_gaji_df[komponen_gaji_df["batch_master_id"].isin(
         all_pegawai_ids)].reset_index(drop=True)
     row_num = itertools.count(generate_row(worksheet, next(
         row_num), komponen_gaji_pegawai, len(all_pegawai_ids), row_name="JUMLAH"))

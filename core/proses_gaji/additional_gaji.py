@@ -1,15 +1,13 @@
 from math import ceil
 from core.config import get_connection_pool
-from core.databases.gaji_batch_master import fetch_gaji_batch_master_by_id
-from core.databases.gaji_batch_master_proses import fetch_gaji_batch_master_proses_by_master_batch_id
+from core.databases.gaji_batch_master_proses import fetch_gaji_batch_master_proses_by_batch_master_id
 from core.enums import JENIS_GAJI
 import pandas as pd
-from icecream import ic
 
 
-def recalculate(master_batch_id: int):
-    gaji_batch_master_proses_list = pd.DataFrame(fetch_gaji_batch_master_proses_by_master_batch_id(
-        master_batch_id))
+def recalculate(master_batch: pd.DataFrame):
+    gaji_batch_master_proses_list = pd.DataFrame(fetch_gaji_batch_master_proses_by_batch_master_id(
+        master_batch["id"]))
 
     add_tambahan = filter_add_gbp(
         gaji_batch_master_proses_list, JENIS_GAJI.PEMASUKAN.name)
@@ -22,11 +20,20 @@ def recalculate(master_batch_id: int):
         gaji_batch_master_proses_list, "POTONGAN")
 
     penghasilan_bersih2 = total_pemasukan-total_potongan
-    pembulatan2 = (ceil(penghasilan_bersih2/100)*100)-penghasilan_bersih2
+    pembulatan2 = round((ceil(penghasilan_bersih2/100)
+                        * 100)-penghasilan_bersih2, 2)
     penghasilan_bersih_final2 = penghasilan_bersih2+pembulatan2
 
-    update_additional(add_tambahan, add_potongan, penghasilan_bersih2,
-                      pembulatan2, penghasilan_bersih_final2, master_batch_id)
+    master_batch["total_add_tambahan"] = add_tambahan
+    master_batch["total_add_potongan"] = add_potongan
+    master_batch["penghasilan_bersih2"] = penghasilan_bersih2
+    master_batch["pembulatan2"] = pembulatan2
+    master_batch["penghasilan_bersih_final2"] = penghasilan_bersih_final2
+
+    return master_batch
+
+    # update_additional(add_tambahan, add_potongan, penghasilan_bersih2,
+    #                   pembulatan2, penghasilan_bersih_final2, batch_master_id)
 
 
 def filter_gbp_by_jenis_gaji(df: pd.DataFrame, jenis_gaji: str):
@@ -40,13 +47,13 @@ def filter_add_gbp(df: pd.DataFrame, jenis_gaji: str):
     return 0 if filtered_data.empty else float(filtered_data["nilai"].sum())
 
 
-def update_additional(
-        add_tambahan: float,
-        add_potongan: float,
-        penghasilan_bersih2: float,
-        pembulatan2: float,
-        penghasilan_bersih_final2: float,
-        master_batch_id: int):
+def update_additional(df: pd.DataFrame):
+    data = [(row["total_add_tambahan"], 
+             row["total_add_potongan"], 
+             row["penghasilan_bersih2"],
+             row["pembulatan2"], 
+             row["penghasilan_bersih_final2"], 
+             row["id"]) for _, row in df.iterrows()]
     query = """
             UPDATE gaji_batch_master SET
                 total_add_tambahan = %s,
@@ -58,7 +65,5 @@ def update_additional(
         """
     with get_connection_pool() as conn:
         with conn.cursor() as cursor:
-            cursor.execute(query, (add_tambahan, add_potongan, penghasilan_bersih2,
-                           pembulatan2, penghasilan_bersih_final2, master_batch_id))
+            cursor.executemany(query, data)
             conn.commit()
-            ic("update gaji batch master ", cursor.rowcount, "affected rows")

@@ -1,15 +1,15 @@
 from math import ceil
 from core.config import get_connection_pool
 from core.databases.gaji_batch_master import fetch_gaji_batch_master_by_id
-from core.databases.gaji_batch_master_proses import fetch_gaji_batch_master_proses_by_master_batch_id
+from core.databases.gaji_batch_master_proses import fetch_gaji_batch_master_proses_by_batch_master_id
 from core.enums import JENIS_GAJI
 import pandas as pd
 from icecream import ic
 
 
-def calculate(master_batch_id: int):
-    gaji_batch_master_proses_list = pd.DataFrame(fetch_gaji_batch_master_proses_by_master_batch_id(
-        master_batch_id))
+def calculate(batch_master_id: int):
+    gaji_batch_master_proses_list = pd.DataFrame(fetch_gaji_batch_master_proses_by_batch_master_id(
+        batch_master_id))
 
     add_tambahan = filter_add_gbp(
         gaji_batch_master_proses_list, JENIS_GAJI.PEMASUKAN.name)
@@ -26,7 +26,7 @@ def calculate(master_batch_id: int):
     penghasilan_bersih_final2 = penghasilan_bersih2+pembulatan2
 
     update_additional(add_tambahan, add_potongan, penghasilan_bersih2,
-                      pembulatan2, penghasilan_bersih_final2, master_batch_id)
+                      pembulatan2, penghasilan_bersih_final2, batch_master_id)
 
 
 def filter_gbp_by_jenis_gaji(df: pd.DataFrame, jenis_gaji: str):
@@ -47,7 +47,7 @@ def update_additional(
         penghasilan_bersih2: float,
         pembulatan2: float,
         penghasilan_bersih_final2: float,
-        master_batch_id: int):
+        batch_master_id: int):
     query = """
             UPDATE gaji_batch_master SET
                 total_add_tambahan = %s,
@@ -60,10 +60,8 @@ def update_additional(
     with get_connection_pool() as conn:
         with conn.cursor() as cursor:
             cursor.execute(query, (add_tambahan, add_potongan, penghasilan_bersih2,
-                           pembulatan2, penghasilan_bersih_final2, master_batch_id))
+                           pembulatan2, penghasilan_bersih_final2, batch_master_id))
             conn.commit()
-            ic("update gaji batch master ", cursor.rowcount, "affected rows")
-
 
 if __name__ == "__main__":
     calculate(10059)

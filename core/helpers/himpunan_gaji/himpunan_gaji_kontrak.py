@@ -37,7 +37,7 @@ def generate_kontrak_sheets(workbook: Workbook, organisasi_df: pd.DataFrame, yea
         pegawai_df = kontrak_df[kontrak_df["kode_organisasi"]
                                 == organisasi["kode"]].reset_index(drop=True)
         pegawai_ids = pegawai_df["id"].tolist()
-        komponen_gaji_df_organisasi = komponen_gaji_df[komponen_gaji_df["master_batch_id"].isin(
+        komponen_gaji_df_organisasi = komponen_gaji_df[komponen_gaji_df["batch_master_id"].isin(
             pegawai_ids)].reset_index(drop=True)
 
         generate_sheet_per_organisasi(

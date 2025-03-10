@@ -6,7 +6,7 @@ from icecream import ic
 
 from core.proses_gaji.phase_2 import calculate_gaji_detail
 
-def execute(root_batch_id: str):
+def execute(batch_root_id: str):
     """ 
         Phase 1:
         - generate raw gaji batch master
@@ -14,7 +14,7 @@ def execute(root_batch_id: str):
         - save raw gaji batch master 
     """
     start_time=datetime.datetime.now()
-    phase1=process_master(root_batch_id)
+    phase1=process_master(batch_root_id)
     if not phase1:
         log_error("proses master failed")
         return
@@ -27,7 +27,7 @@ def execute(root_batch_id: str):
         - update gaji batch master 
     """
     start_time=datetime.datetime.now()
-    phase2=calculate_gaji_detail(root_batch_id)
+    phase2=calculate_gaji_detail(batch_root_id)
     if not phase2:
         log_error("proses detail failed")
         return
@@ -38,7 +38,7 @@ def execute(root_batch_id: str):
         - generate himpunan gaji excel
     """
     start_time=datetime.datetime.now()
-    himpunan_gaji_excel.build(root_batch_id)
+    himpunan_gaji_excel.build(batch_root_id)
     log_info(f"Phase 3 success in {datetime.datetime.now() - start_time}\n")
 
     """ 
@@ -46,7 +46,7 @@ def execute(root_batch_id: str):
         - generate potongan gaji excel
     """
     start_time=datetime.datetime.now()
-    potongan_gaji_excel.build(root_batch_id)
+    potongan_gaji_excel.build(batch_root_id)
     log_info(f"Phase 4 success in {datetime.datetime.now() - start_time}\n")
 
     log_info(f"Proses Gaji Done\n")
