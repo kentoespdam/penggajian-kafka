@@ -13,8 +13,8 @@ async def consume_proses_gaji():
     await consumer.start()
     try:
         async for msg in consumer:
-            json_data = json.loads(msg.value.decode("utf-8"))
-            proses_gaji.execute(json_data["batchId"])
+            id = msg.value.decode("utf-8")
+            proses_gaji.execute(id)
     except Exception as e:
         import traceback
         traceback.print_exc()
