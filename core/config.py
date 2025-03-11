@@ -6,16 +6,17 @@ from dotenv import load_dotenv
 import pymysqlpool
 import logging
 
+load_dotenv()
+
 kafka_log = logging.getLogger("aiokafka")
 kafka_log.setLevel(logging.ERROR)
 logger = logging.getLogger(__name__)
-# logging.basicConfig(filename="logs/penggajian.log",
-# encoding="utf-8", level=logging.INFO)
-logging.basicConfig(encoding="utf-8", level=logging.INFO)
+logging.basicConfig(filename=os.getenv('LOG_FILENAME'),
+encoding="utf-8", level=os.getenv('LOG_LEVEL'))
+# logging.basicConfig(encoding="utf-8", level=logging.INFO)
 logging.handlers.RotatingFileHandler(
     "logs/penggajian.log", maxBytes=1000, backupCount=5)
 
-load_dotenv()
 
 KAFKA_SERVER = os.getenv('KAFKA_SERVER')
 KAFKA_GROUP_ID = os.getenv('KAFKA_GROUP_ID')
