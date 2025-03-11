@@ -9,7 +9,7 @@ def fetch_gaji_batch_root_by_id(id: str) -> tuple:
     with get_connection_pool() as conn:
         with conn.cursor() as cursor:
             cursor.execute(query, (id,))
-            print(cursor.mogrify(query, (id,)))
+            # print(cursor.mogrify(query, (id,)))
             return cursor.fetchone()
 
 

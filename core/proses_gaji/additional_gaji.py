@@ -5,9 +5,10 @@ from core.enums import JENIS_GAJI
 import pandas as pd
 
 
-def recalculate(master_batch: pd.DataFrame):
-    gaji_batch_master_proses_list = pd.DataFrame(fetch_gaji_batch_master_proses_by_batch_master_id(
-        master_batch["id"]))
+def recalculate(master_batch: pd.DataFrame, gbp: pd.DataFrame):
+    gaji_batch_master_proses_list = gbp[
+        gbp["batch_master_id"] == master_batch["id"]
+    ].reset_index(drop=True)
 
     add_tambahan = filter_add_gbp(
         gaji_batch_master_proses_list, JENIS_GAJI.PEMASUKAN.name)
@@ -48,11 +49,11 @@ def filter_add_gbp(df: pd.DataFrame, jenis_gaji: str):
 
 
 def update_additional(df: pd.DataFrame):
-    data = [(row["total_add_tambahan"], 
-             row["total_add_potongan"], 
+    data = [(row["total_add_tambahan"],
+             row["total_add_potongan"],
              row["penghasilan_bersih2"],
-             row["pembulatan2"], 
-             row["penghasilan_bersih_final2"], 
+             row["pembulatan2"],
+             row["penghasilan_bersih_final2"],
              row["id"]) for _, row in df.iterrows()]
     query = """
             UPDATE gaji_batch_master SET

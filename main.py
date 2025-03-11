@@ -4,17 +4,17 @@ import os
 from contextlib import asynccontextmanager
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from fastapi import FastAPI, Response
+from fastapi import FastAPI, Response, UploadFile
 from fastapi.responses import JSONResponse, StreamingResponse
 
 from core import cron_tanggungan
 from core.databases.gaji_batch_master import rollback_additional_gaji_batch_master_by_batch_root_id, rollback_additional_gaji_batch_master_by_id
 from core.databases.gaji_batch_master_proses import rollback_additional_gaji_batch_master_proses
 from core.databases.gaji_batch_root import exists_gaji_batch_root_by_id
-from core.proses_gaji import himpunan_gaji_excel, potongan_gaji_excel
+from core.proses_gaji import additional_potongan, himpunan_gaji_excel, potongan_gaji_excel
 from core.proses_gaji.consumer import consume_proses_gaji
 from core.proses_gaji import additional_gaji
-
+from icecream import ic
 
 scheduler = AsyncIOScheduler()
 
@@ -86,6 +86,15 @@ async def potongan(export_id: str):
                 "Content-Disposition": f"attachment; filename=potongan_gaji_{export_id}.xlsx"},
             media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
+
+
+@app.patch("/upload/{root_batch_id}/additional_gaji", status_code=200)
+async def upload_additional(root_batch_id: str, file: UploadFile):
+    if not exists_gaji_batch_root_by_id(root_batch_id) or file is None:
+        return Response("Unknown Gaji Batch ID", status_code=500)
+
+    await additional_potongan.read_excel(root_batch_id, file)
+    return Response("Success", status_code=200)
 
 
 @app.delete("/rollback/{root_batch_id}/additional_gaji", status_code=200)
