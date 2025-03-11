@@ -14,6 +14,7 @@ from core.databases.riwayat_sp import fetch_all_riwayat_sp_by_date
 from core.databases.rumah_dinas import fetch_all_rumah_dinas, filter_rumah_dinas_by_id
 from core.enums import STATUS_KAWIN, TUNJANGAN, EProsesGaji
 from core.helper import replace_formula_to_variable, replace_formula_with_values, safe_eval
+import swifter
 
 """
     Todo Phase 2:
@@ -40,11 +41,11 @@ def calculate_gaji_detail(batch_root_id: str) -> bool:
     if gaji_batch_master_data.empty:
         return False
 
-    gaji_batch_master_data["is_askes"] = gaji_batch_master_data["is_askes"].apply(
+    gaji_batch_master_data["is_askes"] = gaji_batch_master_data["is_askes"].swifter.apply(
         lambda x: False if x is None else bool(int.from_bytes(x, "little")))
 
-    gbm = processing_gaji_komponen_detail(
-        batch_root_id, gaji_batch_master_data)
+    log_info("Setting up gaji komponen detail")
+    gbm = processing_gaji_komponen_detail(batch_root_id, gaji_batch_master_data)
     gbm["penghasilan_bersih2"] = 0
     gbm["pembulatan2"] = 0
     gbm["penghasilan_bersih_final2"] = 0
@@ -66,23 +67,21 @@ def processing_gaji_komponen_detail(batch_root_id: str, gaji_batch_master_data: 
     Args:
         gaji_batch_master_data (pd.DataFrame): Gaji batch master data.
     """
-    log_info("Setting up gaji komponen detail")
-    gbm, mbp = generate_gaji_batch_master_proses_data(
-        batch_root_id, gaji_batch_master_data)
+    gbm, mbp = generate_gaji_batch_master_proses_data(batch_root_id, gaji_batch_master_data)
 
-    gbm["penghasilan_kotor"] = gbm.apply(lambda x: filter_komponen_by_kode(
+    gbm["penghasilan_kotor"] = gbm.swifter.apply(lambda x: filter_komponen_by_kode(
         mbp, "PENGHASILAN_KOTOR", x["id"])["nilai"].sum(), axis=1)
-    gbm["total_potongan"] = gbm.apply(lambda x: filter_komponen_by_kode(
+    gbm["total_potongan"] = gbm.swifter.apply(lambda x: filter_komponen_by_kode(
         mbp, "POTONGAN", x["id"])["nilai"].sum(), axis=1)
     gbm["total_add_tambahan"] = 0
     gbm["total_add_potongan"] = 0
-    gbm["penghasilan_bersih"] = gbm.apply(lambda x: filter_komponen_by_kode(
+    gbm["penghasilan_bersih"] = gbm.swifter.apply(lambda x: filter_komponen_by_kode(
         mbp, "PENGHASILAN_BERSIH", x["id"])["nilai"].sum(), axis=1)
-    gbm["pembulatan"] = gbm.apply(lambda x: filter_komponen_by_kode(
+    gbm["pembulatan"] = gbm.swifter.apply(lambda x: filter_komponen_by_kode(
         mbp, "PEMBULATAN", x["id"])["nilai"].sum(), axis=1)
-    gbm["penghasilan_bersih_final"] = gbm.apply(lambda x: filter_komponen_by_kode(
+    gbm["penghasilan_bersih_final"] = gbm.swifter.apply(lambda x: filter_komponen_by_kode(
         mbp, "PENGHASILAN_BERSIH_FINAL", x["id"])["nilai"].sum(), axis=1)
-    gbm["pajak"] = gbm.apply(lambda x: round(filter_komponen_by_kode(
+    gbm["pajak"] = gbm.swifter.apply(lambda x: round(filter_komponen_by_kode(
         mbp, "POT_PPH21", x["id"])["nilai"].sum()), axis=1)
 
     list_master_row_id = mbp["batch_master_id"].unique().tolist()
@@ -118,13 +117,10 @@ def generate_gaji_batch_master_proses_data(batch_root_id: str, gaji_batch_master
     date_until = datetime.date(int(periode[0:4]), int(periode[4:6]), 20)
     timedelta_prev_month = datetime.timedelta(days=date_until.day)
     date_from = (date_until-timedelta_prev_month).strftime("%Y-%m-21")
-    riwayat_sp_data = pd.DataFrame(
-        fetch_all_riwayat_sp_by_date(date_from, date_until))
-    gaji_potongan_tkk_data = pd.DataFrame(
-        fetch_all_gaji_batch_potongan_tkk_by_batch_root_id(batch_root_id))
+    riwayat_sp_data = pd.DataFrame(fetch_all_riwayat_sp_by_date(date_from, date_until))
+    gaji_potongan_tkk_data = pd.DataFrame(fetch_all_gaji_batch_potongan_tkk_by_batch_root_id(batch_root_id))
 
-    gaji_pendapatan_non_pajak_data = pd.DataFrame(
-        fetch_all_gaji_pendapatan_non_pajak())
+    gaji_pendapatan_non_pajak_data = pd.DataFrame(fetch_all_gaji_pendapatan_non_pajak())
     result_komponen_list = pd.DataFrame()
     for _, master_row in gaji_batch_master_data.iterrows():
         log_info(
@@ -136,14 +132,14 @@ def generate_gaji_batch_master_proses_data(batch_root_id: str, gaji_batch_master
         komponen_df["batch_master_id"] = master_row["id"]
 
         # Convert byte to bool for 'is_reference' field
-        komponen_df["is_reference"] = komponen_df["is_reference"].apply(
+        komponen_df["is_reference"] = komponen_df["is_reference"].swifter.apply(
             lambda value: bool(int.from_bytes(value, "little"))
         )
 
         # Set up nilai referensi komponen gaji
-        log_info("Setting up nilai referensi komponen gaji")
+        # log_info("Setting up nilai referensi komponen gaji")
         start_time = datetime.datetime.now()
-        komponen_df["nilai"] = komponen_df.apply(
+        komponen_df["nilai"] = komponen_df.swifter.apply(
             lambda row: row["nilai"] if not row["is_reference"] else setup_nilai_referensi_komponen_gaji(
                 row, master_row, tunjangan_data, rumah_dinas_data, gaji_potongan_data,
                 riwayat_sp_data, gaji_potongan_tkk_data, gaji_pendapatan_non_pajak_data),
@@ -153,18 +149,16 @@ def generate_gaji_batch_master_proses_data(batch_root_id: str, gaji_batch_master
             f"Finished setting up nilai referensi komponen gaji in {datetime.datetime.now() - start_time}")
 
         # Set up nilai formula
-        log_info("Setting up nilai formula")
+        # log_info("Setting up nilai formula")
         start_time = datetime.datetime.now()
-        komponen_df.loc[:, "nilai_formula"] = komponen_df["formula"].apply(
+        komponen_df.loc[:, "nilai_formula"] = komponen_df["formula"].swifter.apply(
             lambda x: replace_formula_to_variable(x)
         )
-        komponen_df = calculate_nilai_formula(
-            komponen_df, master_row, maksimal_potongan)
+        komponen_df = calculate_nilai_formula(komponen_df, master_row, maksimal_potongan)
         log_info(
             f"Finished setting up nilai formula in {datetime.datetime.now() - start_time}\n")
 
-        komponen_df["nilai"] = komponen_df["nilai"].apply(
-            lambda x: 0 if pd.isna(x) else x)
+        komponen_df["nilai"] = komponen_df["nilai"].swifter.apply(lambda x: 0 if pd.isna(x) else x)
 
         # append komponen_df to result_komponen_list
         result_komponen_list = pd.concat([result_komponen_list, komponen_df])

@@ -64,4 +64,4 @@ def update_additional(
             conn.commit()
 
 if __name__ == "__main__":
-    calculate(10059)
+    calculate(399)

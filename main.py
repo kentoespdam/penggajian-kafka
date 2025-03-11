@@ -8,7 +8,7 @@ from fastapi import FastAPI, Response
 from fastapi.responses import JSONResponse, StreamingResponse
 
 from core import cron_tanggungan
-from core.databases.gaji_batch_master import rollback_additional_gaji_batch_master_by_batch_root_id
+from core.databases.gaji_batch_master import rollback_additional_gaji_batch_master_by_batch_root_id, rollback_additional_gaji_batch_master_by_id
 from core.databases.gaji_batch_master_proses import rollback_additional_gaji_batch_master_proses
 from core.databases.gaji_batch_root import exists_gaji_batch_root_by_id
 from core.proses_gaji import himpunan_gaji_excel, potongan_gaji_excel
@@ -94,8 +94,10 @@ async def rollback_additional(root_batch_id: str):
         return Response("Unknown Gaji Batch ID", status_code=404)
 
     rollback_additional_gaji_batch_master_proses()
-    result = rollback_additional_gaji_batch_master_by_batch_root_id(root_batch_id)
+    result = rollback_additional_gaji_batch_master_by_batch_root_id(
+        root_batch_id)
     return JSONResponse(result, status_code=200)
+
 
 @app.delete("/rollback/{batch_master_id}/master_batch")
 async def rollback_master(batch_master_id: str):
@@ -103,5 +105,5 @@ async def rollback_master(batch_master_id: str):
         return Response("Unknown Gaji Batch ID", status_code=404)
 
     rollback_additional_gaji_batch_master_proses(batch_master_id)
-    result = rollback_additional_gaji_batch_master_by_batch_root_id(batch_master_id)
+    result = rollback_additional_gaji_batch_master_by_id(batch_master_id)
     return JSONResponse(result, status_code=200)

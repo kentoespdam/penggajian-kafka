@@ -158,6 +158,7 @@ def delete_gaji_batch_master_by_batch_root_id(batch_root_id: str) -> None:
     with get_connection_pool() as conn:
         with conn.cursor() as cursor:
             cursor.execute(query, (batch_root_id,))
+            ic(cursor.mogrify(query, (batch_root_id,)))
             conn.commit()
 
 
@@ -185,8 +186,6 @@ def save_gaji_batch_master(data: pd.DataFrame) -> None:
         row["gaji_pendapatan_non_pajak_id"],
         row["kode_pajak"],
         row["jml_jiwa"],
-        row["created_by"],
-        row["updated_by"],
         row["penghasilan_kotor"],
         row["total_potongan"],
         row["total_add_tambahan"],
@@ -204,9 +203,9 @@ def save_gaji_batch_master(data: pd.DataFrame) -> None:
             golongan_id, golongan, pangkat, jabatan_id, nama_jabatan,
             level_id, organisasi_id, nama_organisasi, status_pegawai, gaji_profil_id,
             gaji_pokok, phdp, status_kawin, jml_tanggungan, gaji_pendapatan_non_pajak_id, 
-            kode_pajak, jml_jiwa, created_by, updated_by, penghasilan_kotor, 
-            total_potongan, total_add_tambahan, total_add_potongan, penghasilan_bersih, pembulatan, 
-            penghasilan_bersih_final, pajak, is_different
+            kode_pajak, jml_jiwa, penghasilan_kotor, total_potongan, total_add_tambahan, 
+            total_add_potongan, penghasilan_bersih, pembulatan, penghasilan_bersih_final, pajak, 
+            is_different
         ) VALUES (
             %s, %s, %s, %s, %s,
             %s, %s, %s, %s, %s,
@@ -214,7 +213,7 @@ def save_gaji_batch_master(data: pd.DataFrame) -> None:
             %s, %s, %s, %s, %s,
             %s, %s, %s, %s, %s,
             %s, %s, %s, %s, %s,
-            %s, %s, %s
+            %s
         )
         """
 
@@ -364,7 +363,7 @@ def rollback_additional_gaji_batch_master_by_batch_root_id(batch_root_id: str) -
             return f"{conn.affected_rows()} rows affected"
 
 
-def rollback_master_gaji_batch_master_by_batch_root_id(batch_master_id: str) -> None:
+def rollback_additional_gaji_batch_master_by_id(batch_master_id: str) -> None:
     query = """
         UPDATE gaji_batch_master SET
             total_add_tambahan = 0,
@@ -380,3 +379,4 @@ def rollback_master_gaji_batch_master_by_batch_root_id(batch_master_id: str) -> 
             cursor.execute(query, (batch_master_id,))
             conn.commit()
             return f"{conn.affected_rows()} rows affected"
+

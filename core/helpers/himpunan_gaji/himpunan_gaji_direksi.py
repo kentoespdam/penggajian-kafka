@@ -30,8 +30,8 @@ def generate_direksi_sheet(
                 1, direksi_gaji, komponen_gaji_df
             )
         )
-    row_num = itertools.count(generate_direksi_footer(
-        worksheet, next(row_num), direksi_gaji_df, komponen_gaji_df))
+    row_num = itertools.count(
+        generate_direksi_footer(worksheet, next(row_num), direksi_gaji_df, komponen_gaji_df))
 
     generate_ttd(worksheet, next(row_num), dirum, year, month)
 
@@ -59,17 +59,22 @@ def generate_direksi_row(
             cell.number_format = "#,##0"
 
     build_cell(order_number)
-    build_cell("{}{}".format("** " if employee["is_different"] else "", employee["nama"]))
+    build_cell("{}{}".format(
+        "** " if employee["is_different"] else "", employee["nama"]))
     build_cell(employee["nipam"])
     build_cell("-", horizontal_align="center")
 
     components = [
-        ["GP", "0", "TUNJ_JABATAN", "TUNJ_AIR", "POT_PENSIUN", "POT_ASKES", "PENGHASILAN_BERSIH_FINAL"],
-        ["", "", "", "JML_JIWA", "TUNJ_SI", "0", "TUNJ_BERAS", "TUNJ_PPH21", "POT_ASTEK", "POT_TKK", "", ""],
-        ["", "", "", "", "TUNJ_ANAK", "", "TUNJ_KK", "PENGHASILAN_KOTOR", "SEWA_RUDIN", "POT_PPH21", "", ""],
-        ["", "", "", "", "JUMLAH", "", "TUNJ_KESEHATAN", "PEMBULATAN", "POT_JP", "POTONGAN", "", ""]
+        ["GP", "0", "TUNJ_JABATAN", "TUNJ_AIR", "POT_PENSIUN",
+            "POT_ASKES", "PENGHASILAN_BERSIH_FINAL"],
+        ["", "", "", "JML_JIWA", "TUNJ_SI", "0", "TUNJ_BERAS",
+            "TUNJ_PPH21", "POT_ASTEK", "POT_TKK", "", ""],
+        ["", "", "", "", "TUNJ_ANAK", "", "TUNJ_KK",
+            "PENGHASILAN_KOTOR", "SEWA_RUDIN", "POT_PPH21", "", ""],
+        ["", "", "", "", "JUMLAH", "", "TUNJ_KESEHATAN",
+            "PEMBULATAN", "POT_JP", "POTONGAN", "", ""]
     ]
-    
+
     for idx, component_list in enumerate(components):
         generate_cell_list(
             worksheet,
@@ -83,7 +88,8 @@ def generate_direksi_row(
             is_last_row=(idx == len(components) - 1)
         )
 
-    generate_pemda_title(worksheet, next(row_counter), "Gaji yang telah diterima di PEMDA")
+    generate_pemda_title(worksheet, next(row_counter),
+                         "Gaji yang telah diterima di PEMDA")
 
     pemda_values_components = [
         ["0", "0", "0", "0", "0", "0", "0", ""],
@@ -104,7 +110,8 @@ def generate_direksi_row(
         )
 
     row_counter = itertools.count(start=next(row_counter) - 1)
-    generate_pemda_title(worksheet, next(row_counter), "Kekurangan yang harus dibayar PDAM")
+    generate_pemda_title(worksheet, next(row_counter),
+                         "Kekurangan yang harus dibayar PDAM")
 
     for idx, component_list in enumerate(components):
         generate_pemda_value(
@@ -132,7 +139,8 @@ def generate_cell_list(worksheet: Worksheet, row_num: int, start_col: int,
             next(column_index),
             content,
             h_aligment="center" if center_align else None,
-            border_option={"left": "thin", "right": "thin", "bottom": "thin" if is_last_row else None}
+            border_option={"left": "thin", "right": "thin",
+                           "bottom": "thin" if is_last_row else None}
         )
         if is_numeric:
             cell.number_format = "#,##0"
@@ -144,14 +152,18 @@ def generate_cell_list(worksheet: Worksheet, row_num: int, start_col: int,
             build_cell("")
         elif component == "JUMLAH":
             base_salary = get_nilai_komponen(salary_df, row_info["id"], "GP")
-            si_allowance = get_nilai_komponen(salary_df, row_info["id"], "TUNJ_SI")
-            child_allowance = get_nilai_komponen(salary_df, row_info["id"], "TUNJ_ANAK")
+            si_allowance = get_nilai_komponen(
+                salary_df, row_info["id"], "TUNJ_SI")
+            child_allowance = get_nilai_komponen(
+                salary_df, row_info["id"], "TUNJ_ANAK")
             total = base_salary + si_allowance + child_allowance
             build_cell(total, True)
         elif component == "JML_JIWA":
-            build_cell(f"{row_info['jml_tanggungan']}/{row_info['jml_jiwa']}", center_align=True)
+            build_cell(
+                f"{row_info['jml_tanggungan']}/{row_info['jml_jiwa']}", center_align=True)
         else:
-            build_cell(get_nilai_komponen(salary_df, row_info["id"], component), True)
+            build_cell(get_nilai_komponen(
+                salary_df, row_info["id"], component), True)
 
     if is_first_row:
         build_cell(str(order))

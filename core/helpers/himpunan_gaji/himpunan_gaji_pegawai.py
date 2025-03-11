@@ -84,8 +84,7 @@ def generate_organisasi_row(
             cell.number_format = "#,##0"
 
     build_cell(order_number)
-    build_cell(
-        f"{'** ' if row_data['is_different'] else ''}{row_data['nama']}")
+    build_cell(f"{'** ' if row_data['is_different'] else ''}{row_data['nama']}")
     build_cell(row_data["nipam"])
     build_cell(row_data["golongan"] if row_data["golongan"]
                else "-", "center", "center")
@@ -134,8 +133,7 @@ def generate_cell_list(worksheet: Worksheet, row_num: int, col_num: int,
             jumlah = gaji_pokok + tunj_si + tunj_anak
             build_cell(jumlah, True)
         else:
-            build_cell(get_nilai_komponen(salary_components,
-                                          row_data["id"], komponen), True)
+            build_cell(get_nilai_komponen(salary_components,row_data["id"], komponen), True)
     if is_first:
         build_cell(str(urut))
 
