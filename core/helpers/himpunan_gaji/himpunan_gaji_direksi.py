@@ -113,7 +113,18 @@ def generate_direksi_row(
     generate_pemda_title(worksheet, next(row_counter),
                          "Kekurangan yang harus dibayar PDAM")
 
-    for idx, component_list in enumerate(components):
+    kekurangan_pemda_values_components = [
+        ["GP", "0", "TUNJ_JABATAN", "TUNJ_AIR", "POT_PENSIUN",
+            "POT_ASKES", "PENGHASILAN_BERSIH_FINAL", ""],
+        ["JML_JIWA", "TUNJ_SI", "TUNJ_BERAS",
+            "TUNJ_PPH21", "POT_ASTEK", "POT_TKK", "", ""],
+        ["TUNJ_ANAK", "", "TUNJ_KK",
+            "PENGHASILAN_KOTOR", "SEWA_RUDIN", "POT_PPH21", "", ""],
+        ["JUMLAH", "", "TUNJ_KESEHATAN",
+            "PEMBULATAN", "POT_JP", "POTONGAN", "", ""]
+    ]
+
+    for idx, component_list in enumerate(kekurangan_pemda_values_components):
         generate_pemda_value(
             worksheet,
             next(row_counter) - 1,

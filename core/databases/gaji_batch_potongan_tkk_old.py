@@ -96,16 +96,30 @@ def get_jml_pot_tkk(batch_root_id: str, pegawai_id: int, nipam: str, status_pega
     return jumlah_potongan
 
 
-def calculate_jml_pot_tkk(
-    potongan_tkk_data: pd.DataFrame, nipam: str
-) -> int:
-    """
-    Calculate the total deduction for a given nipam.
-    """
-    total_deduction = 0
-    filtered_potongan_tkk = potongan_tkk_data[potongan_tkk_data["nipam"] == nipam]
+def calculate_jml_pot_tkk(riwayat_sp: pd.DataFrame, gaji_potongan_tkk: pd.DataFrame, pegawai_id: int, nipam: str, status_pegawai: float):
+    jumlah_potongan = 0
+    if not riwayat_sp.empty:
+        filtered_riwayat_sp = riwayat_sp[riwayat_sp["pegawai_id"]
+                                         == pegawai_id]
+        if not filtered_riwayat_sp.empty:
+            for _, row in filtered_riwayat_sp.iterrows():
+                if status_pegawai == STATUS_PEGAWAI.KONTRAK.value:
+                    if row["jenis_sp"] in {JENIS_SP.SP_1.value,
+                                           JENIS_SP.SP_2.value,
+                                           JENIS_SP.SP_3.value}:
+                        jumlah_potongan = 11
+                        break
+                if row["jenis_sp"] == JENIS_SP.SP_3.value:
+                    jumlah_potongan = -1
+                    break
+                jumlah_potongan += row["nilai"]
 
-    if not filtered_potongan_tkk.empty:
-        total_deduction = filtered_potongan_tkk["potongan"].sum()
+    if jumlah_potongan > -1:
+        if gaji_potongan_tkk.empty:
+            return jumlah_potongan
+        
+        gaji_potongan_tkk = gaji_potongan_tkk[gaji_potongan_tkk["nipam"] == nipam]
+        if not gaji_potongan_tkk.empty:
+            jumlah_potongan += gaji_potongan_tkk["potongan"].sum()
 
-    return total_deduction
+    return jumlah_potongan
