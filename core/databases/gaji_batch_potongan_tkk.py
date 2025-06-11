@@ -102,6 +102,9 @@ def calculate_jml_pot_tkk(
     """
     Calculate the total deduction for a given nipam.
     """
+    if potongan_tkk_data.empty:
+        return 0
+
     total_deduction = 0
     filtered_potongan_tkk = potongan_tkk_data[potongan_tkk_data["nipam"] == nipam]
 
