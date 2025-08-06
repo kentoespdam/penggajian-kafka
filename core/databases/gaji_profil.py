@@ -1,16 +1,9 @@
 from core.config import get_connection_pool
 
 
-def fetch_gaji_profil(profil_id: str = None) -> list | dict:
-    query = """
-    SELECT
-        id,
-        kode,
-        nama,
-        nominal
-    FROM
-        gaji_profil
-    """
+def fetch_gaji_profil(profil_id: str = None):
+    query = "SELECT id, nama FROM gaji_profil"
+
     params = ()
     if profil_id:
         query += " WHERE id = %s"

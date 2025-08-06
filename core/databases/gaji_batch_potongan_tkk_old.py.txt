@@ -24,9 +24,10 @@ def fetch_all_gaji_batch_potongan_tkk_by_batch_root_id(batch_root_id: str):
 
 def fetch_gaji_potongan_tkk_by_batch_root_id_and_nipam(batch_root_id: str, nipam: str):
     query = """
-            SELECT sum(potongan) AS potongan 
-            FROM gaji_batch_potongan_tkk 
-            WHERE batch_id = %s AND nipam = %s """
+            SELECT sum(potongan) AS potongan
+            FROM gaji_batch_potongan_tkk
+            WHERE batch_id = %s
+              AND nipam = %s """
     with get_connection_pool() as connection:
         with connection.cursor() as cursor:
             cursor.execute(query, (batch_root_id, nipam))
@@ -71,7 +72,7 @@ def get_jml_pot_tkk(batch_root_id: str, pegawai_id: int, nipam: str, status_pega
     date_from = (date_until-timedelta_prev_month).strftime("%Y-%m-21")
 
     # check Riwayat SP
-    riwayat_sp_data = fetch_riwayat_sp(pegawai_id, date_from, date_until)
+    riwayat_sp_data = fetch_riwayat_sp(pegawai_id, date_from, date_until.strftime("%Y-%m-%d"))
 
     for row in riwayat_sp_data:
         # Jika pegawai kontrk kena SP 1,2,3

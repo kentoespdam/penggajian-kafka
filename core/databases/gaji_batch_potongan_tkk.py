@@ -8,29 +8,33 @@ from core.enums import STATUS_PEGAWAI, JENIS_SP
 
 def fetch_all_gaji_batch_potongan_tkk_by_batch_root_id(batch_root_id: str):
     query = """
-        SELECT nipam, sum(potongan) AS potongan 
-        FROM 
-            gaji_batch_potongan_tkk 
-        WHERE 
-            batch_id = %s
-        GROUP BY
-            nipam
-        """
+            SELECT nipam, sum(potongan) AS potongan
+            FROM gaji_batch_potongan_tkk
+            WHERE batch_id = %s
+            GROUP BY nipam \
+            """
     with get_connection_pool() as connection:
         with connection.cursor() as cursor:
             cursor.execute(query, (batch_root_id,))
             return cursor.fetchall()
 
 
-def fetch_gaji_potongan_tkk_by_batch_root_id_and_nipam(batch_root_id: str, nipam: str):
+def fetch_gaji_potongan_tkk_by_batch_root_id_and_nipam(
+        batch_root_id: str, nipam: str) -> dict:
+    """
+    Fetches total potongan from gaji_batch_potongan_tkk by batch root id and nipam
+    """
     query = """
-            SELECT sum(potongan) AS potongan 
-            FROM gaji_batch_potongan_tkk 
-            WHERE batch_id = %s AND nipam = %s """
+            SELECT SUM(potongan) AS total_potongan
+            FROM gaji_batch_potongan_tkk
+            WHERE batch_id = %s
+              AND nipam = %s
+            """
     with get_connection_pool() as connection:
         with connection.cursor() as cursor:
             cursor.execute(query, (batch_root_id, nipam))
-            return cursor.fetchone()
+            result = cursor.fetchone()
+            return dict(result) if result else None
 
 
 def fetch_all_gaji_potongan_tkk():
@@ -42,7 +46,8 @@ def fetch_all_gaji_potongan_tkk():
 
 
 def filter_gaji_potongan_tkk(data: pd.DataFrame, status_pegawai: int, level_id: float, golongan_id: float):
-    return data[(data["status_pegawai"] == status_pegawai) & (data["level_id"] == level_id) & (data["golongan_id"] == golongan_id)].reset_index(drop=True)
+    return data[(data["status_pegawai"] == status_pegawai) & (data["level_id"] == level_id) & (
+            data["golongan_id"] == golongan_id)].reset_index(drop=True)
 
 
 def fetch_gaji_potongan_tkk_by_status_pegawai(status_pegawai: int, level_id: int = None, golongan_id: int = None):
@@ -63,41 +68,42 @@ def fetch_gaji_potongan_tkk_by_status_pegawai(status_pegawai: int, level_id: int
             return cursor.fetchone()
 
 
-def get_jml_pot_tkk(batch_root_id: str, pegawai_id: int, nipam: str, status_pegawai: int):
-    jumlah_potongan = 0
+def get_jml_pot_tkk(batch_root_id: str, pegawai_id: int, nipam: str, status_pegawai: int) -> int:
+    """Calculate the total deduction for a given nipam."""
+    total_deduction = 0
     periode = batch_root_id.split("-")[0]
-    date_until = datetime.date(int(periode[0:4]), int(periode[4:6]), 20)
-    timedelta_prev_month = datetime.timedelta(days=date_until.day)
-    date_from = (date_until-timedelta_prev_month).strftime("%Y-%m-21")
+    end_date = datetime.date(
+        int(periode[0:4]), int(periode[4:6]), 20)
+    start_date = (end_date - datetime.timedelta(days=end_date.day)).strftime(
+        "%Y-%m-21")
 
     # check Riwayat SP
-    riwayat_sp_data = fetch_riwayat_sp(pegawai_id, date_from, date_until)
+    riwayat_sp_data = fetch_riwayat_sp(pegawai_id, start_date, end_date.strftime("%Y-%m-%d"))
 
     for row in riwayat_sp_data:
-        # Jika pegawai kontrk kena SP 1,2,3
+        # Jika pegawai kontrak kena SP 1,2,3
         if status_pegawai == STATUS_PEGAWAI.KONTRAK.value:
-            if row["jenis_sp"] in (JENIS_SP.SP_1.value,
-                                   JENIS_SP.SP_2.value,
-                                   JENIS_SP.SP_3.value):
-                jumlah_potongan = 11
+            if row["jenis_sp"] in (
+                    JENIS_SP.SP_1.value, JENIS_SP.SP_2.value, JENIS_SP.SP_3.value):
+                total_deduction = 11
                 break
         if row["jenis_sp"] == JENIS_SP.SP_3.value:
-            jumlah_potongan = -1
+            total_deduction = -1
             break
-        jumlah_potongan += row["nilai"]
+        total_deduction += row["nilai"]
 
-    if jumlah_potongan > -1:
+    if total_deduction > -1:
         # check potongan tkk
         potongan_tkk = fetch_gaji_potongan_tkk_by_batch_root_id_and_nipam(
             batch_root_id, nipam)
         if potongan_tkk["potongan"]:
-            jumlah_potongan += int(potongan_tkk["potongan"])
+            total_deduction += int(potongan_tkk["potongan"])
 
-    return jumlah_potongan
+    return total_deduction
 
 
 def calculate_jml_pot_tkk(
-    potongan_tkk_data: pd.DataFrame, nipam: str
+        potongan_tkk_data: pd.DataFrame, nipam: str
 ) -> int:
     """
     Calculate the total deduction for a given nipam.

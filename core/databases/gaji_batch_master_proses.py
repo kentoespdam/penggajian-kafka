@@ -3,33 +3,30 @@ import pandas as pd
 from icecream import ic
 
 
-def fetch_gaji_batch_master_proses_by_batch_master_id(batch_master_id: int) -> list:
+def fetch_gaji_batch_master_proses_by_batch_master_id(batch_master_id: int):
     query = "SELECT * FROM gaji_batch_master_proses WHERE batch_master_id = %s"
-    with get_connection_pool() as conn:
-        with conn.cursor() as cursor:
+    with get_connection_pool() as connection:
+        with connection.cursor() as cursor:
             cursor.execute(query, (batch_master_id,))
             return cursor.fetchall()
 
 
-def fetch_gaji_batch_master_proses_by_root_batch_id(root_batch_id: int) -> list:
-    query = """SELECT
-            gbp.id,
-            gbp.batch_master_id,
-            gbp.formula,
-            gbp.jenis_gaji,
-            gbp.kode,
-            gbp.nama,
-            gbp.nilai,
-            gbp.nilai_formula,
-            gbp.urut 
-        FROM
-            gaji_batch_master AS gbm
-            INNER JOIN gaji_batch_root AS gbr ON gbm.batch_root_id = gbr.id 
-            AND gbr.is_deleted = 0
-            INNER JOIN gaji_batch_master_proses AS gbp ON gbp.batch_master_id = gbm.id 
-        WHERE
-            gbr.id = %s
-        """
+def fetch_gaji_batch_master_proses_by_root_batch_id(root_batch_id: str):
+    query = """SELECT gbp.id,
+                      gbp.batch_master_id,
+                      gbp.formula,
+                      gbp.jenis_gaji,
+                      gbp.kode,
+                      gbp.nama,
+                      gbp.nilai,
+                      gbp.nilai_formula,
+                      gbp.urut
+               FROM gaji_batch_master AS gbm
+                        INNER JOIN gaji_batch_root AS gbr ON gbm.batch_root_id = gbr.id
+                   AND gbr.is_deleted = 0
+                        INNER JOIN gaji_batch_master_proses AS gbp ON gbp.batch_master_id = gbm.id
+               WHERE gbr.id = %s
+            """
     with get_connection_pool() as conn:
         with conn.cursor() as cursor:
             cursor.execute(query, (root_batch_id,))
@@ -63,21 +60,22 @@ def save_gaji_batch_master_proses(dataframe: pd.DataFrame) -> None:
     ]
 
     query = """
-        INSERT INTO gaji_batch_master_proses (
-            jenis_gaji, formula, kode, nama, nilai, nilai_formula, urut, batch_master_id
-        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-    """
+            INSERT INTO gaji_batch_master_proses (jenis_gaji, formula, kode, nama, nilai, nilai_formula, urut,
+                                                  batch_master_id)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            """
     with get_connection_pool() as conn:
         with conn.cursor() as cursor:
             cursor.executemany(query, insert_data)
             conn.commit()
 
 
-def fetch_gaji_batch_master_proses_by_master_id(master_id: int) -> list:
+def fetch_gaji_batch_master_proses_by_master_id(master_id: int):
     query = """
-        SELECT * FROM gaji_batch_master_proses gbp
-        WHERE gbp.batch_master_id=%s
-        """
+            SELECT *
+            FROM gaji_batch_master_proses gbp
+            WHERE gbp.batch_master_id = %s
+            """
     with get_connection_pool() as conn:
         with conn.cursor() as cursor:
             cursor.execute(query, (master_id,))
@@ -86,7 +84,7 @@ def fetch_gaji_batch_master_proses_by_master_id(master_id: int) -> list:
 
 def get_nilai_komponen(daftar_proses_gaji_pegawai: pd.DataFrame, batch_master_id: int, kode: str):
     result = daftar_proses_gaji_pegawai[(daftar_proses_gaji_pegawai["batch_master_id"] == batch_master_id) & (
-        daftar_proses_gaji_pegawai["kode"] == kode)]
+            daftar_proses_gaji_pegawai["kode"] == kode)]
     return result["nilai"].values[0] if not result.empty else 0
 
 

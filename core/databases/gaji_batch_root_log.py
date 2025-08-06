@@ -7,7 +7,7 @@ def save_batch_root_error_logs(error_pegawai_list: list):
                     row["nama"], row["notes"]) for row in error_pegawai_list]
     query = """
             INSERT INTO gaji_batch_root_error_logs(
-                batch_root_id,
+                root_batch_id,
                 nipam,
                 nama,
                 notes

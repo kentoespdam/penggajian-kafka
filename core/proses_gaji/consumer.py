@@ -1,7 +1,8 @@
-import json
 from aiokafka import AIOKafkaConsumer
+
 from core.config import KAFKA_GROUP_ID, KAFKA_SERVER, PENGGAJIAN_TOPIC
 from core.proses_gaji import proses_gaji
+from icecream import ic
 
 
 async def consume_proses_gaji():
@@ -13,8 +14,9 @@ async def consume_proses_gaji():
     await consumer.start()
     try:
         async for msg in consumer:
-            id = msg.value.decode("utf-8")
-            proses_gaji.execute(id)
+            batch_id = msg.value.decode("utf-8")
+            ic(batch_id)
+            proses_gaji.execute(batch_id)
     except Exception as e:
         import traceback
         traceback.print_exc()

@@ -1,19 +1,24 @@
 import datetime
 from core.config import log_error, log_info
-from core.databases.gaji_batch_master import fetch_gaji_batch_master_by_periode, fetch_gaji_batch_master_data_by_batch_root_id, reset_different_gaji_batch_master_as_false, update_different_gaji_batch_master, update_gaji_batch_master
-from core.databases.gaji_batch_master_proses import delete_gaji_batch_master_proses_by_batch_master_id, save_gaji_batch_master_proses
+from core.databases.gaji_batch_master import fetch_gaji_batch_master_by_periode, \
+    fetch_gaji_batch_master_data_by_batch_root_id, reset_different_gaji_batch_master_as_false, \
+    update_different_gaji_batch_master, update_gaji_batch_master
+from core.databases.gaji_batch_master_proses import delete_gaji_batch_master_proses_by_batch_master_id, \
+    save_gaji_batch_master_proses
 from core.databases.gaji_batch_root import update_status_gaji_batch_root
 from core.databases.gaji_komponen import fetch_gaji_komponen
 from icecream import ic
 import pandas as pd
-from core.databases.gaji_batch_potongan_tkk import calculate_jml_pot_tkk, fetch_all_gaji_batch_potongan_tkk_by_batch_root_id, fetch_all_gaji_potongan_tkk, filter_gaji_potongan_tkk
+from core.databases.gaji_batch_potongan_tkk import calculate_jml_pot_tkk, \
+    fetch_all_gaji_batch_potongan_tkk_by_batch_root_id, fetch_all_gaji_potongan_tkk, filter_gaji_potongan_tkk
 from core.databases.gaji_parameter import fetch_parameter_setting_data
-from core.databases.gaji_pendapatan_non_pajak import fetch_all_gaji_pendapatan_non_pajak, filter_gaji_pendapatan_non_pajak
+from core.databases.gaji_pendapatan_non_pajak import fetch_all_gaji_pendapatan_non_pajak, \
+    filter_gaji_pendapatan_non_pajak
 from core.databases.gaji_tunjangan import fetch_all_tunjangan_data, filter_tunjangan_data
 from core.databases.rumah_dinas import fetch_all_rumah_dinas, filter_rumah_dinas_by_id
 from core.enums import STATUS_KAWIN, TUNJANGAN, EProsesGaji
 from core.helper import replace_formula_to_variable, replace_formula_with_values, safe_eval
-import swifter
+import swifter # noqa
 
 """
     Todo Phase 2:
@@ -65,6 +70,7 @@ def processing_gaji_komponen_detail(batch_root_id: str, gaji_batch_master_data: 
     Set up gaji komponen detail for given gaji batch master data.
 
     Args:
+        batch_root_id (str): Root batch ID.
         gaji_batch_master_data (pd.DataFrame): Gaji batch master data.
     """
     gbm, mbp = generate_gaji_batch_master_proses_data(
@@ -93,12 +99,13 @@ def processing_gaji_komponen_detail(batch_root_id: str, gaji_batch_master_data: 
 
 
 def filter_komponen_by_kode(komponen: pd.DataFrame, kode: str, batch_master_id: int):
-    return komponen[(komponen["kode"] == kode) & (komponen["batch_master_id"] == batch_master_id)].reset_index(drop=True)
+    return komponen[(komponen["kode"] == kode) & (komponen["batch_master_id"] == batch_master_id)].reset_index(
+        drop=True)
 
 
 def filter_komponen_by_jenis_gaji(komponen: pd.DataFrame, jenis_gaji: str, batch_master_id: int):
     result = komponen[(komponen["jenis_gaji"] == jenis_gaji) & (
-        komponen["batch_master_id"] == batch_master_id) & (komponen["kode"] != "GP")].reset_index(drop=True)
+            komponen["batch_master_id"] == batch_master_id) & (komponen["kode"] != "GP")].reset_index(drop=True)
     ic(result[["kode", "jenis_gaji", "nilai"]])
     return result
 
@@ -121,7 +128,7 @@ def generate_gaji_batch_master_proses_data(batch_root_id: str, gaji_batch_master
     result_komponen_list = pd.DataFrame()
     for _, master_row in gaji_batch_master_data.iterrows():
         log_info(
-            f"Processing gaji komponen detail for {master_row['nipam']} - {master_row['nama']} - [{master_row['status_pegawai']}] - {master_row['golongan_id']}")
+            f'Processing gaji komponen detail for {master_row['nipam']} - {master_row['nama']} - [{master_row['status_pegawai']}] - {master_row['golongan_id']}')
 
         komponen_data = all_komponen_gaji[all_komponen_gaji["profil_gaji_id"]
                                           == master_row["gaji_profil_id"]]
@@ -167,7 +174,7 @@ def generate_gaji_batch_master_proses_data(batch_root_id: str, gaji_batch_master
 
 def setup_nilai_referensi_komponen_gaji(
         komponen: pd.Series,
-        master_data: pd.DataFrame,
+        master_data: pd.Series,
         tunjangan_data: pd.DataFrame,
         rumah_dinas_data: pd.DataFrame,
         gaji_potongan_tkk: pd.DataFrame,
@@ -216,7 +223,7 @@ def setup_nilai_referensi_komponen_gaji(
             else:
                 nominal = filter_rumah_dinas_by_id(
                     rumah_dinas_data,
-                    int(master_data["rumah_dinas_id"])
+                    master_data["rumah_dinas_id"]
                 )
                 return nominal["nilai"][0] if not nominal.empty else 0
         case "REF_POT_TKK":
@@ -237,9 +244,14 @@ def setup_nilai_referensi_komponen_gaji(
                 gaji_potongan_tkk_data,
                 master_data["nipam"]
             )
+    return None
 
 
-def calculate_nilai_formula(komponen_gaji: pd.DataFrame, master_data: pd.DataFrame, maksimal_potongan: dict) -> pd.DataFrame:
+def calculate_nilai_formula(
+        komponen_gaji: pd.DataFrame,
+        master_data: pd.Series,
+        maksimal_potongan: dict
+) -> pd.DataFrame:
     """
     Set up nilai formula for each komponen gaji.
     """
@@ -250,8 +262,8 @@ def calculate_nilai_formula(komponen_gaji: pd.DataFrame, master_data: pd.DataFra
                           for _, komponen in komponen_gaji.iterrows()}
         nilai_komponen["JML_ANAK"] = master_data["jml_tanggungan"]
         nilai_komponen["JML_JIWA"] = 1 + master_data["jml_tanggungan"] + \
-            (0 if master_data["status_kawin"]
-             != STATUS_KAWIN.KAWIN.value else 1)
+                                     (0 if master_data["status_kawin"]
+                                           != STATUS_KAWIN.KAWIN.value else 1)
         # set GP zero for TUNJ_SI and status_kawin not STATUS_KAWIN.KAWIN
         if row["kode"] == "TUNJ_SI" and master_data["status_kawin"] != STATUS_KAWIN.KAWIN.value:
             nilai_komponen["GP"] = 0
@@ -307,7 +319,8 @@ def compare_with_latest_gaji(batch_root_id: str, master_data: pd.DataFrame):
     # comparing gaji pokok from 2 DataFrame between master_data with latest_batch_master_data if gaji pokok not equal then print gaji is changed
     for master_data in master_data.itertuples():
         for latest_gaji in latest_batch_master_data.itertuples():
-            if master_data["pegawai_id"] == latest_gaji["pegawai_id"] and master_data["gaji_pokok"] != latest_gaji["gaji_pokok"]:
+            if master_data["pegawai_id"] == latest_gaji["pegawai_id"] and master_data["gaji_pokok"] != latest_gaji[
+                "gaji_pokok"]:
                 different_gaji.append(
                     (master_data["batch_root_id"], master_data["pegawai_id"]))
     reset_different_gaji_batch_master_as_false(batch_root_id)

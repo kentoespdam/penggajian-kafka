@@ -1,7 +1,7 @@
 from core.config import get_connection_pool
 
 
-def fetch_gaji_komponen(profil_gaji_id: int = None) -> list:
+def fetch_gaji_komponen(profil_gaji_id: int = None):
     query = """
     SELECT
         id,

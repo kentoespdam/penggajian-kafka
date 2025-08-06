@@ -1,7 +1,7 @@
 from core.config import get_connection_pool
 
 
-def fetch_organisasi_by_level(level: int | list[int]) -> list[tuple]:
+def fetch_organisasi_by_level(level: int | list[int]):
     """
     Fetch all organisasi records that match the given level.
 
@@ -12,17 +12,17 @@ def fetch_organisasi_by_level(level: int | list[int]) -> list[tuple]:
         A list of tuples containing the id, parent_id, level_org, kode, and nama of the organisasi.
     """
     query = """
-        SELECT id, parent_id, level_org, kode, nama, short_name
-        FROM organisasi
-        WHERE is_deleted = FALSE
-    """
-    params = ()
+            SELECT id, parent_id, level_org, kode, nama, short_name
+            FROM organisasi
+            WHERE is_deleted = %s
+            """
+    params = (False,)
     if isinstance(level, int):
         query += " AND level_org = %s"
-        params = (level,)
+        params += (level,)
     else:
         query += " AND level_org IN %s"
-        params = (tuple(level),)
+        params += (tuple(level),)
 
     with get_connection_pool() as connection:
         with connection.cursor() as cursor:

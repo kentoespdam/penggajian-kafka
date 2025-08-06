@@ -1,10 +1,11 @@
 import datetime
+import logging
 import logging.handlers
 import os
-import pymysql
-from dotenv import load_dotenv
+
 import pymysqlpool
-import logging
+from dotenv import load_dotenv
+from pymysql.cursors import DictCursor
 
 load_dotenv()
 
@@ -55,7 +56,7 @@ def get_connection_pool(autocommit: bool = False) -> pymysqlpool.Connection:
         'password': os.getenv('DB_PASS'),
         'database': os.getenv('DB_NAME'),
         'charset': 'utf8mb4',
-        'cursorclass': pymysql.cursors.DictCursor
+        'cursorclass': DictCursor
     }
     return pymysqlpool.ConnectionPool(
         size=10,

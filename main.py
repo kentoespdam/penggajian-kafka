@@ -8,13 +8,13 @@ from fastapi import FastAPI, Response, UploadFile
 from fastapi.responses import JSONResponse, StreamingResponse
 
 from core import cron_tanggungan
-from core.databases.gaji_batch_master import rollback_additional_gaji_batch_master_by_batch_root_id, rollback_additional_gaji_batch_master_by_id
+from core.databases.gaji_batch_master import rollback_additional_gaji_batch_master_by_batch_root_id, \
+    rollback_additional_gaji_batch_master_by_id
 from core.databases.gaji_batch_master_proses import rollback_additional_gaji_batch_master_proses
 from core.databases.gaji_batch_root import exists_gaji_batch_root_by_id
 from core.proses_gaji import additional_potongan, himpunan_gaji_excel, potongan_gaji_excel
 from core.proses_gaji.consumer import consume_proses_gaji
 from core.proses_gaji import additional_gaji
-from icecream import ic
 
 scheduler = AsyncIOScheduler()
 
@@ -41,7 +41,7 @@ app = FastAPI(
 @app.get("/recalculate/{batch_master_id}", status_code=200)
 async def recalculate(batch_master_id: str):
     additional_gaji.recalculate(batch_master_id)
-    return Response("Success", status_code=200)
+    return Response("Success")
 
 
 @app.get("/export/regenerate/{export_id}", status_code=200)

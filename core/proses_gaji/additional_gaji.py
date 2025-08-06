@@ -1,14 +1,15 @@
 from math import ceil
-from core.config import get_connection_pool
-from core.databases.gaji_batch_master_proses import fetch_gaji_batch_master_proses_by_batch_master_id
-from core.enums import JENIS_GAJI
+
 import pandas as pd
+
+from core.config import get_connection_pool
+from core.enums import JENIS_GAJI
 
 
 def recalculate(master_batch: pd.DataFrame, gbp: pd.DataFrame):
     gaji_batch_master_proses_list = gbp[
         gbp["batch_master_id"] == master_batch["id"]
-    ].reset_index(drop=True)
+        ].reset_index(drop=True)
 
     add_tambahan = filter_add_gbp(
         gaji_batch_master_proses_list, JENIS_GAJI.PEMASUKAN.name)
@@ -20,10 +21,10 @@ def recalculate(master_batch: pd.DataFrame, gbp: pd.DataFrame):
     total_potongan = filter_gbp_by_jenis_gaji(
         gaji_batch_master_proses_list, "POTONGAN")
 
-    penghasilan_bersih2 = total_pemasukan-total_potongan
-    pembulatan2 = round((ceil(penghasilan_bersih2/100)
-                        * 100)-penghasilan_bersih2, 2)
-    penghasilan_bersih_final2 = penghasilan_bersih2+pembulatan2
+    penghasilan_bersih2 = total_pemasukan - total_potongan
+    pembulatan2 = round((ceil(penghasilan_bersih2 / 100)
+                         * 100) - penghasilan_bersih2, 2)
+    penghasilan_bersih_final2 = penghasilan_bersih2 + pembulatan2
 
     master_batch["total_add_tambahan"] = add_tambahan
     master_batch["total_add_potongan"] = add_potongan
@@ -32,9 +33,6 @@ def recalculate(master_batch: pd.DataFrame, gbp: pd.DataFrame):
     master_batch["penghasilan_bersih_final2"] = penghasilan_bersih_final2
 
     return master_batch
-
-    # update_additional(add_tambahan, add_potongan, penghasilan_bersih2,
-    #                   pembulatan2, penghasilan_bersih_final2, batch_master_id)
 
 
 def filter_gbp_by_jenis_gaji(df: pd.DataFrame, jenis_gaji: str):
@@ -56,14 +54,14 @@ def update_additional(df: pd.DataFrame):
              row["penghasilan_bersih_final2"],
              row["id"]) for _, row in df.iterrows()]
     query = """
-            UPDATE gaji_batch_master SET
-                total_add_tambahan = %s,
-                total_add_potongan = %s,
-                penghasilan_bersih2 = %s,
-                pembulatan2 = %s,
+            UPDATE gaji_batch_master
+            SET total_add_tambahan        = %s,
+                total_add_potongan        = %s,
+                penghasilan_bersih2       = %s,
+                pembulatan2               = %s,
                 penghasilan_bersih_final2 = %s
             WHERE id = %s
-        """
+            """
     with get_connection_pool() as conn:
         with conn.cursor() as cursor:
             cursor.executemany(query, data)

@@ -9,13 +9,15 @@ from core.helpers.himpunan_gaji.hhtkkp import generate_hhtkkp_sheet
 from core.helpers.himpunan_gaji.himpunan_gaji_direksi import generate_direksi_sheet
 from core.helpers.himpunan_gaji.himpunan_gaji_kontrak import generate_kontrak_sheets
 from core.helpers.himpunan_gaji.himpunan_gaji_pegawai import generate_organisasi_sheet
-import swifter
+import swifter  # noqa
+
 
 def build(batch_root_id: str):
     log_info(f"generate himpunan gaji excel {batch_root_id}")
     organisasi_list = pd.DataFrame(fetch_organisasi_by_level([4]))
 
-    raw_daftar_gaji_pegawai = pd.DataFrame(fetch_daftar_gaji_pegawai(batch_root_id))
+    raw_daftar_gaji_pegawai = pd.DataFrame(
+        fetch_daftar_gaji_pegawai(batch_root_id))
     """
         create new data frame with raw_daftar gaji with column
             nipam,
@@ -53,7 +55,8 @@ def generate_excel(batch_root_id: str, organisasi_list: pd.DataFrame, daftar_gaj
     ].reset_index(drop=True)
 
     daftar_proses_gaji_direksi = daftar_proses_gaji_pegawai[
-        daftar_proses_gaji_pegawai["batch_master_id"].isin(daftar_gaji_direksi["id"].tolist())
+        daftar_proses_gaji_pegawai["batch_master_id"].isin(
+            daftar_gaji_direksi["id"].tolist())
     ].reset_index(drop=True)
 
     dirum = daftar_gaji_pegawai[
