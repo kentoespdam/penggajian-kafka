@@ -1,5 +1,4 @@
 import asyncio
-import datetime
 import io
 import os
 from contextlib import asynccontextmanager
@@ -11,8 +10,8 @@ from fastapi.responses import StreamingResponse
 from core import cron_tanggungan
 from core.proses_gaji.consumer import consume_proses_gaji
 
-
 scheduler = AsyncIOScheduler()
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -32,32 +31,38 @@ app = FastAPI(
     not_found_response={"message": "Not Found"},
 )
 
+
 @app.get("/export/table_gaji/{export_id}", status_code=200)
-async def table_gaji(export_id: str):
-    path_file = f"result_excel/tabel_gaji_{export_id}.xlsx"
-    if not os.path.exists(path_file):
+async def export_table_gaji(export_id: str) -> StreamingResponse | Response:
+    """Export Excel file for table gaji by export ID"""
+    file_path = f"result_excel/tabel_gaji_{export_id}.xlsx"
+
+    if not os.path.exists(file_path):
         return Response("File Not Found!", status_code=404)
 
-    with open(path_file, "rb") as f:
-        data = f.read()
-        return StreamingResponse(
-            io.BytesIO(data),
-            headers={"Content-Disposition": f"attachment; filename=tabel_gaji_{export_id}.xlsx"},
-            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
+    with open(file_path, "rb") as file:
+        file_data = file.read()
+
+    return StreamingResponse(
+        io.BytesIO(file_data),
+        headers={"Content-Disposition": f"attachment; filename=tabel_gaji_{export_id}.xlsx"},
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
 
 
 @app.get("/export/potongan/{export_id}")
-async def potongan(export_id: str):
-    path_file = f"result_excel/potongan_gaji_{export_id}.xlsx"
-    if not os.path.exists(path_file):
+async def export_potongan(export_id: str) -> StreamingResponse | Response:
+    """Export Excel file for potongan gaji by export ID"""
+    file_path = f"result_excel/potongan_gaji_{export_id}.xlsx"
+
+    if not os.path.exists(file_path):
         return Response("File Not Found!", status_code=404)
 
-    with open(path_file, "rb") as f:
-        data = f.read()
-        return StreamingResponse(
-            io.BytesIO(data),
-            headers={"Content-Disposition": f"attachment; filename=potongan_gaji_{export_id}.xlsx"},
-            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
+    with open(file_path, "rb") as file:
+        file_data = file.read()
 
+    return StreamingResponse(
+        io.BytesIO(file_data),
+        headers={"Content-Disposition": f"attachment; filename=potongan_gaji_{export_id}.xlsx"},
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
