@@ -1,0 +1,20 @@
+[project]
+name = "penggajian-kafka"
+version = "1.0.0"
+description = "Penggajian with Kafka Services"
+author = [
+    { name = "Bagus Sudrajat", email = "kentoes.pdam@gmail.com" }
+]
+requires-python = ">= 3.12.10" 
+dependencies = []
+
+
+[build-system]
+requires = []
+build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+log_cli = true
+log_cli_level = "DEBUG"
+log_cli_format = "%(asctime)s [%(levelname)8s] %(message)s (%(filename)s:%(lineno)s)"
+log_cli_date_format = "%Y-%m-%d %H:%M:%S"
