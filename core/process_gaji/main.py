@@ -4,6 +4,7 @@ from core.config import LOGGER
 from core.enums import PROCESS_GAJI_STATUS
 from core.process_gaji.phase1 import process_master
 from core.process_gaji.phase2 import calculate_gaji_detail
+from core.process_gaji.phase3 import build_himpunan_gaji
 
 
 def execute(batch_root_id: str) -> None:
@@ -24,3 +25,8 @@ def execute(batch_root_id: str) -> None:
 
     end_time = datetime.now()
     LOGGER.info(f"process gaji finished in {end_time - start_time}")
+
+    LOGGER.info("\n=========================================================\n")
+
+
+    build_himpunan_gaji(batch_root_id)

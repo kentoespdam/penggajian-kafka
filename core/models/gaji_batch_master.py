@@ -246,3 +246,21 @@ def update_gaji_batch_master(df: pd.DataFrame) -> None:
             cursor.executemany(query, update_data)
             LOGGER.info(f"{cursor.rowcount} rows updated")
             conn.commit()
+
+def fetch_daftar_potongan_gaji_by_batch_root_id(batch_root_id: str) -> pd.DataFrame:
+    query = """
+            SELECT gbm.id,
+                   gbm.nipam,
+                   gbm.nama,
+                   gbm.level_id,
+                   org.kode AS kode_organisasi,
+                   gbm.penghasilan_bersih
+            FROM gaji_batch_master AS gbm
+                     INNER JOIN organisasi AS org ON gbm.organisasi_id = org.id
+            WHERE gbm.batch_root_id = %s
+            """
+
+    with get_connection_pool() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(query, (batch_root_id,))
+            return pd.DataFrame(cursor.fetchall())

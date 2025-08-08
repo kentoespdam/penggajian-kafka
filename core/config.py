@@ -4,10 +4,10 @@ from dotenv import load_dotenv
 from pymysqlpool import Connection, ConnectionPool
 from pymysql.cursors import DictCursor
 
-logging.basicConfig(level='DEBUG',  # os.getenv('LOG_LEVEL', 'INFO'),
+load_dotenv()
+logging.basicConfig(level=os.getenv('LOG_LEVEL', 'INFO'),
                     format='%(asctime)s [%(levelname)8s] %(message)s (%(filename)s:%(lineno)s)', encoding='utf-8')
 LOGGER = logging.getLogger(__name__)
-load_dotenv()
 
 KAFKA_SERVER = os.getenv('KAFKA_SERVER')
 KAFKA_GROUP_ID = os.getenv('KAFKA_GROUP_ID')

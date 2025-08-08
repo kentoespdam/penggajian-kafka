@@ -2,9 +2,6 @@ import ast
 import math
 import operator
 
-from core.config import LOGGER
-
-
 
 def safe_eval(expression: str):
     # Allowed operators
@@ -46,7 +43,7 @@ def safe_eval(expression: str):
             if isinstance(node.func, ast.Name) and node.func.id in allowed_functions:
                 func = allowed_functions[node.func.id]
                 args = [eval_node(arg) for arg in node.args]
-                return func(*args)
+                return func(*args) # noqa
             return None
         elif isinstance(node, ast.Constant):  # Number
             return node.n
@@ -57,3 +54,12 @@ def safe_eval(expression: str):
 
     tree = ast.parse(expression, mode='eval')
     return eval_node(tree.body)
+
+
+def get_nama_bulan(bulan: int) -> str:
+    list_bulan = [
+        "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November",
+        "Desember"
+    ]
+
+    return list_bulan[bulan - 1]
