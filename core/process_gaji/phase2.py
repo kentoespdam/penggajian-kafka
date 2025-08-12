@@ -6,6 +6,7 @@ import pandas as pd
 
 from core.config import LOGGER
 from core.enums import PROCESS_GAJI_STATUS, EProsesGaji
+from core.helpers import cleanup_is_boolean
 from core.models.gaji_batch_master import fetch_gaji_batch_master_data_by_batch_root_id, update_gaji_batch_master
 from core.models.gaji_batch_master_proses import delete_gaji_batch_master_proses_by_batch_master_id_list, \
     save_gaji_batch_master_proses
@@ -20,7 +21,7 @@ from core.models.rumah_dinas import fetch_rumah_dinas
 from core.process_gaji.phase2_calculate import _calculate_nilai_formula, _cleanup_nilai_referensi_komponen_gaji, \
     _applying_dataframe
 from core.process_gaji.phase2_compare import compare_with_latest_gaji
-from core.process_gaji.phase2_helper import _replace_formula_to_variable, _cleanup_is_boolean
+from core.process_gaji.phase2_helper import _replace_formula_to_variable
 
 
 def calculate_gaji_detail(root_batch_id: str) -> PROCESS_GAJI_STATUS:
@@ -35,7 +36,7 @@ def calculate_gaji_detail(root_batch_id: str) -> PROCESS_GAJI_STATUS:
         return PROCESS_GAJI_STATUS.FAILED
 
     gbm_ddf = dd.from_pandas(gbm_df, npartitions=2)
-    gbm_ddf["is_askes"] = gbm_ddf["is_askes"].map(_cleanup_is_boolean, meta=("is_askes", "bool"))
+    gbm_ddf["is_askes"] = gbm_ddf["is_askes"].map(cleanup_is_boolean, meta=("is_askes", "bool"))
     gbm_df = gbm_ddf.compute()
 
     gbm_df = process_gaji_komponen_detail(root_batch_id, gbm_df)
@@ -76,7 +77,7 @@ def process_gaji_komponen_detail(batch_root_id: str, master_df: pd.DataFrame) ->
 
     Args:
         batch_root_id (str): The ID of the gaji batch root
-        master_df (pd.DataFrame): The master data for the gaji batch master
+        master_df (pd.DataFrame): master data for the gaji batch master
 
     Returns:
         tuple: A tuple containing the status of the process and the cleaned master data
@@ -108,7 +109,7 @@ def process_gaji_komponen_detail(batch_root_id: str, master_df: pd.DataFrame) ->
         save_gaji_batch_master_proses(process_data_df)
     except Exception as error:
         LOGGER.error(error)
-        # Update the status of the batch root to failed
+        # Update the status of the batch root to failed status
         update_status_gaji_batch_root(
             batch_root_id, status_process=EProsesGaji.FAILED.value
         )
@@ -135,7 +136,7 @@ def generate_gaji_batch_master_process_data(
 
     komponen_gaji_df = fetch_gaji_komponen()
     komponen_gaji_ddf = dd.from_pandas(komponen_gaji_df, npartitions=4)
-    komponen_gaji_ddf["is_reference"] = komponen_gaji_ddf["is_reference"].map(_cleanup_is_boolean,
+    komponen_gaji_ddf["is_reference"] = komponen_gaji_ddf["is_reference"].map(cleanup_is_boolean,
                                                                               meta=("is_reference", "bool"))
     komponen_gaji_df = komponen_gaji_ddf.compute()
 

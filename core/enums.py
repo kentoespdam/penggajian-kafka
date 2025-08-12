@@ -74,7 +74,17 @@ class JENIS_GAJI(Enum):
     PEMASUKAN = "PEMASUKAN"
     POTONGAN = "POTONGAN"
 
+
 class PROCESS_GAJI_STATUS(Enum):
     SUCCESS = "Success"
     FAILED = "Failed"
     DUPLICATE = "Duplicate"
+
+
+class EXCEL_TEXT_ALIGN(Enum):
+    H_TOP = 0
+    H_CENTER = 1
+    H_BOTTOM = 2
+    V_LEFT = 3
+    V_CENTER = 4
+    V_RIGHT = 5

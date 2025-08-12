@@ -21,29 +21,29 @@ def generate_potongan(wb: Workbook, title: str, short_name: str, tahun: int, bul
     row_counter = itertools.count(start=11)
 
     for index, row in daftar_gaji_pegawai.iterrows():
-        generate_empty_row(worksheet, next(row_counter), 7, "TRL")
-        generate_potongan_row(worksheet, next(row_counter),row, index + 1)
-        generate_empty_row(worksheet, next(row_counter), 7, "RLB")
+        _generate_empty_row(worksheet, next(row_counter), 7, {"top": "thin", "left": "thin", "right": "thin"})
+        _generate_potongan_row(worksheet, next(row_counter), row, index + 1)  # noqa
+        _generate_empty_row(worksheet, next(row_counter), 7, {"bottom": "thin", "left": "thin", "right": "thin"})
 
 
-def generate_empty_row(worksheet: Worksheet, row_num: int, max_col: int, border: str = None) -> None:
+def _generate_empty_row(worksheet: Worksheet, row_num: int, max_col: int, border: dict = None) -> None:
     for index in range(max_col):
-        cell_builder(worksheet, row_num, index + 1, "", border if border else "LR")
+        cell_builder(worksheet, row_num, index + 1, "", border=border if border else {"left": "thin", "right": "thin"})
 
 
-def generate_potongan_row(worksheet: Worksheet, row_num: int, gaji_pegawai_df: pd.Series, urut: int):
+def _generate_potongan_row(worksheet: Worksheet, row_num: int, gaji_pegawai_df: pd.Series, urut: int):
     col_num = itertools.count(start=1)
 
-    def build_cell(content: str | int | float, is_number: bool = False, border: str = None) -> None:
+    def build_cell(content: str | int | float, is_number: bool = False, border: dict = None) -> None:
         cell = cell_builder(worksheet, row_num, next(
-            col_num), content, border if border else "LR")
+            col_num), content, border=border if border else {"left": "thin", "right": "thin"})
         if is_number:
             cell.number_format = "#,##0"
 
     build_cell(urut)
     build_cell(f"{gaji_pegawai_df['nama']}")
     build_cell(f"{gaji_pegawai_df['nipam']}")
-    build_cell(gaji_pegawai_df['penghasilan_bersih'], is_number=True)
+    build_cell(gaji_pegawai_df['penghasilan_bersih'], is_number=True)  # noqa
     build_cell(0, is_number=True)
     build_cell(0, is_number=True)
-    build_cell(gaji_pegawai_df['penghasilan_bersih'], is_number=True)
+    build_cell(gaji_pegawai_df['penghasilan_bersih'], is_number=True)  # noqa

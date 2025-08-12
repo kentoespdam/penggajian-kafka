@@ -2,6 +2,20 @@ import ast
 import math
 import operator
 
+import pandas as pd
+
+from core.config import LOGGER
+
+
+def cleanup_is_boolean(x):
+    x.encode("utf-8")
+    return True if x == '\x01' else False
+
+
+def cleanup_empty_string(x):
+    if pd.isna(x):
+        return ''
+    return  x if x is not None else ''
 
 def safe_eval(expression: str):
     # Allowed operators
@@ -43,7 +57,7 @@ def safe_eval(expression: str):
             if isinstance(node.func, ast.Name) and node.func.id in allowed_functions:
                 func = allowed_functions[node.func.id]
                 args = [eval_node(arg) for arg in node.args]
-                return func(*args) # noqa
+                return func(*args)  # noqa
             return None
         elif isinstance(node, ast.Constant):  # Number
             return node.n
@@ -63,3 +77,13 @@ def get_nama_bulan(bulan: int) -> str:
     ]
 
     return list_bulan[bulan - 1]
+
+
+def get_nilai_komponen(proses_gaji_df: pd.DataFrame, batch_master_id: pd.Series, kode: str) -> float:
+    """Get the nilai of a komponen from proses gaji dataframe."""
+    filtered_df = proses_gaji_df[
+        (proses_gaji_df["batch_master_id"] == batch_master_id) &
+        (proses_gaji_df["kode"] == kode)
+        ].reset_index(drop=True)
+
+    return filtered_df["nilai"].values[0] if not filtered_df.empty else 0

@@ -247,6 +247,50 @@ def update_gaji_batch_master(df: pd.DataFrame) -> None:
             LOGGER.info(f"{cursor.rowcount} rows updated")
             conn.commit()
 
+
+def fetch_daftar_gaji_pegawai(batch_root_id: str):
+    query = """
+            SELECT gbm.id,
+                   gbm.nipam,
+                   gbm.nama,
+                   gbm.status_pegawai,
+                   gbm.gaji_pokok,
+                   org.id   AS organisasi_id,
+                   org.kode AS kode_organisasi,
+                   org.nama AS nama_organisasi,
+                   gbm.golongan_id,
+                   gbm.golongan,
+                   gbm.pangkat,
+                   gbm.level_id,
+                   gbm.jml_jiwa,
+                   gbm.jml_tanggungan,
+                   gbm.status_kawin,
+                   gbm.penghasilan_kotor,
+                   gbm.total_potongan,
+                   gbm.total_add_tambahan,
+                   gbm.total_add_potongan,
+                   gbm.penghasilan_bersih,
+                   gbm.pembulatan,
+                   gbm.penghasilan_bersih_final,
+                   gbm.is_different,
+                   gbp.batch_master_id,
+                   gbp.kode,
+                   gbp.jenis_gaji,
+                   gbp.nilai,
+                   gbp.nama AS uraian
+            FROM gaji_batch_master AS gbm
+                     INNER JOIN pegawai AS peg ON gbm.pegawai_id = peg.id
+                     INNER JOIN gaji_batch_master_proses gbp ON gbm.id = gbp.batch_master_id
+                     INNER JOIN organisasi AS org ON gbm.organisasi_id = org.id
+            WHERE gbm.batch_root_id = %s
+            """
+
+    with get_connection_pool() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(query, (batch_root_id,))
+            return pd.DataFrame(cursor.fetchall())
+
+
 def fetch_daftar_potongan_gaji_by_batch_root_id(batch_root_id: str) -> pd.DataFrame:
     query = """
             SELECT gbm.id,

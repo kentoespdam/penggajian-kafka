@@ -3,11 +3,6 @@ import pandas as pd
 from core.config import LOGGER
 
 
-def _cleanup_is_boolean(x):
-    x.encode("utf-8")
-    return True if x == '\x01' else False
-
-
 def _filter_tunjangan(tunjangan_df: pd.DataFrame, tunjangan_type: int, level_id: int, golongan_id: int) -> float:
     if level_id in {5, 6}:
         condition = "(jenis_tunjangan == @tunjangan_type) & (level_id == @level_id)"
