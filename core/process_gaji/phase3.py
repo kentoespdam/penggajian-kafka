@@ -12,6 +12,7 @@ from core.models.gaji_batch_master import fetch_daftar_gaji_pegawai
 from core.models.organisasi import fetch_organisasi_by_level
 from core.process_gaji.phase3_generate_direksi import generate_direksi_sheet
 from core.process_gaji.phase3_generate_hgpkp import generate_hgpkp_sheet
+from core.process_gaji.phase3_generate_hhtkkp import generate_hhtkkp_sheet
 from core.process_gaji.phase3_generate_kontrak import generate_kontrak_sheet
 from core.process_gaji.phase3_generate_pegawai import generate_pegawai_sheet
 
@@ -31,78 +32,161 @@ _raw_types = {
     "is_different": str
 }
 
+# Constants for selected columns
+COLUMNS_GAJI_PEGAWAI = [
+    "id",
+    "nipam",
+    "nama",
+    "status_pegawai",
+    "golongan",
+    "pangkat",
+    "jml_tanggungan",
+    "jml_jiwa",
+    "organisasi_id",
+    "kode_organisasi",
+    "nama_organisasi",
+    "level_id",
+    "is_different",
+]
+
+COLUMNS_PROSES_GAJI = [
+    "batch_master_id",
+    "kode",
+    "jenis_gaji",
+    "nilai",
+    "uraian",
+    "kode_organisasi",
+]
+
+# Constants
+DIREKSI_LEVEL_IDS: tuple[int, ...] = (2, 3, 4)
+DIRUM_LEVEL_ID: int = 4
+TEMPLATE_REL_PATH = "excel_template/daftar_gaji_template.xlsx"
+OUTPUT_REL_DIR = "result_excel"
+SHEETS_TO_REMOVE: tuple[str, ...] = ("pegawai", "kontrak", "HGPKP1", "HHTKKP1", "HG1")
+
 
 def build_himpunan_gaji(batch_root_id: str) -> None:
+    """
+    Build Himpunan Gaji (salary aggregation) and generate the Excel output for a given batch.
+    """
     start_time = datetime.now()
-    LOGGER.info("Starting phase3: build himpunan gaji for batch ID {}".format(batch_root_id))
+    LOGGER.info(f"Starting phase3: build himpunan gaji for batch ID {batch_root_id}")
 
     organisasi_df = fetch_organisasi_by_level(4)
     if organisasi_df.empty:
-        LOGGER.error("Error Organisasi not found")
+        LOGGER.error("Organisasi not found")
         return
 
-    raw_datar_gaji_pegawai_df = fetch_daftar_gaji_pegawai(batch_root_id)
-    if raw_datar_gaji_pegawai_df.empty:
-        LOGGER.error("Error daftar gaji pegawai not found")
+    raw_daftar_gaji_pegawai_df = fetch_daftar_gaji_pegawai(batch_root_id)
+    if raw_daftar_gaji_pegawai_df.empty:
+        LOGGER.error("Daftar gaji pegawai not found")
         return
 
-    daftar_gaji_pegawai_df = raw_datar_gaji_pegawai_df[[
-        "id", "nipam", "nama", "status_pegawai", "golongan", "pangkat", "jml_tanggungan",
-        "jml_jiwa", "organisasi_id", "kode_organisasi", "nama_organisasi", "level_id", "is_different"
-    ]].drop_duplicates(subset=["nipam"]).reset_index(drop=True)
-    ddf = dd.from_pandas(daftar_gaji_pegawai_df, npartitions=2)
-    ddf["golongan"] = ddf["golongan"].map(lambda x: cleanup_empty_string(x))
-    ddf["pangkat"] = ddf["pangkat"].map(lambda x: cleanup_empty_string(x))
-    ddf["is_different"] = ddf["is_different"].map(lambda x: cleanup_is_boolean(x), meta=("is_different", "object"))
-    daftar_gaji_pegawai_df = ddf.compute()
+    # Prepare pegawai dataframe
+    pegawai_selected_df = _select_and_deduplicate_pegawai(raw_daftar_gaji_pegawai_df)
+    daftar_gaji_pegawai_df = _clean_pegawai_df(pegawai_selected_df)
 
-    daftar_proses_gaji_df = raw_datar_gaji_pegawai_df[[
-        "batch_master_id", "kode", "jenis_gaji", "nilai", "uraian", "kode_organisasi"
-    ]].reset_index(drop=True)
+    # Prepare komponen gaji (proses) dataframe
+    komponen_gaji_df = raw_daftar_gaji_pegawai_df[COLUMNS_PROSES_GAJI].reset_index(drop=True)
 
-    _generate_excel(batch_root_id, organisasi_df, daftar_gaji_pegawai_df, daftar_proses_gaji_df)
+    _generate_excel(
+        batch_root_id,
+        organisasi_df,
+        daftar_gaji_pegawai_df,
+        komponen_gaji_df,
+    )
 
-    end_time = datetime.now()
-    LOGGER.info(f"build himpunan gaji finished in {end_time - start_time}")
+    elapsed = datetime.now() - start_time
+    LOGGER.info(f"Build himpunan gaji finished in {elapsed}")
 
 
 def _generate_excel(
         batch_root_id: str,
         organisasi_df: pd.DataFrame,
         daftar_gaji_pegawai_df: pd.DataFrame,
-        daftar_proses_gaji_df: pd.DataFrame
+        komponen_gaji_df: pd.DataFrame,
 ) -> None:
+    year, month = _parse_year_month(batch_root_id)
+    project_root = _get_project_root()
+    wb = load_workbook(_get_template_path(project_root))
+
+    # Direksi (levels 2, 3, 4)
+    is_direksi = daftar_gaji_pegawai_df["level_id"].isin(DIREKSI_LEVEL_IDS)
+    daftar_gaji_direksi_df = (
+        daftar_gaji_pegawai_df.loc[is_direksi]
+        .sort_values(by=["level_id"])
+        .reset_index(drop=True)
+    )
+
+    proses_for_direksi = komponen_gaji_df["batch_master_id"].isin(daftar_gaji_direksi_df["id"])
+    komponen_gaji_direksi_df = komponen_gaji_df.loc[proses_for_direksi].reset_index(drop=True)
+
+    # DIRUM (level 4 only)
+    is_dirum = daftar_gaji_pegawai_df["level_id"].eq(DIRUM_LEVEL_ID)
+    dirum_df = daftar_gaji_pegawai_df.loc[is_dirum].reset_index(drop=True)
+
+    # Pegawai Kontrak
+    is_kontrak = daftar_gaji_pegawai_df["status_pegawai"].eq(STATUS_PEGAWAI.KONTRAK.value)
+    daftar_gaji_pegawai_kontrak_df = daftar_gaji_pegawai_df.loc[is_kontrak].reset_index(drop=True)
+
+    # Generate sheets
+    # generate_direksi_sheet(wb, year, month, daftar_gaji_direksi_df, komponen_gaji_direksi_df, dirum_df)
+    # generate_pegawai_sheet(wb, organisasi_df, year, month, daftar_gaji_pegawai_df, komponen_gaji_df, dirum_df)
+    # generate_kontrak_sheet(wb, organisasi_df, year, month, daftar_gaji_pegawai_kontrak_df, komponen_gaji_df, dirum_df)
+    # generate_hgpkp_sheet(wb, organisasi_df, year, month, daftar_gaji_pegawai_df, komponen_gaji_df)
+    generate_hhtkkp_sheet(wb, organisasi_df, year, month, daftar_gaji_pegawai_df, komponen_gaji_df)
+
+    # Cleanup template sheets and save
+    _remove_template_sheets(wb)
+    wb.save(_get_output_path(project_root, batch_root_id))
+
+
+def _select_and_deduplicate_pegawai(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Select the necessary columns for pegawai and deduplicate by NIPAM.
+    """
+    return (
+        df[COLUMNS_GAJI_PEGAWAI]
+        .drop_duplicates(subset=["nipam"])
+        .reset_index(drop=True)
+    )
+
+
+def _clean_pegawai_df(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Clean specific pegawai columns using Dask for scalability.
+    - Normalize golongan and pangkat empty strings
+    - Normalize is_different to boolean-like value
+    """
+    ddf = dd.from_pandas(df, npartitions=2)
+    ddf["golongan"] = ddf["golongan"].map(cleanup_empty_string)
+    ddf["pangkat"] = ddf["pangkat"].map(cleanup_empty_string)
+    ddf["is_different"] = ddf["is_different"].map(
+        cleanup_is_boolean, meta=("is_different", "bool")
+    )
+    return ddf.compute()
+
+
+def _parse_year_month(batch_root_id: str) -> tuple[int, int]:
     periode = batch_root_id.split("-")[0]
-    tahun = int(periode[0:4])
-    bulan = int(periode[4:6])
+    return int(periode[0:4]), int(periode[4:6])
 
-    project_root = Path(__file__).parent.parent.parent
-    wb = load_workbook(f"{project_root}/excel_template/daftar_gaji_template.xlsx")
 
-    mask = daftar_gaji_pegawai_df["level_id"].isin([2, 3, 4])
-    daftar_gaji_direksi_df = daftar_gaji_pegawai_df[mask].reset_index(drop=True)
-    daftar_gaji_direksi_df.sort_values(by=["level_id"], inplace=True)
-    daftar_gaji_direksi_df.reset_index(drop=True, inplace=True, col_level=0)
+def _get_project_root() -> Path:
+    return Path(__file__).resolve().parents[2]
 
-    mask = daftar_proses_gaji_df["batch_master_id"].isin(daftar_gaji_direksi_df["id"])
-    daftar_proses_gaji_direksi_df = daftar_proses_gaji_df[mask].reset_index(drop=True)
 
-    mask = daftar_gaji_pegawai_df["level_id"] == 4
-    dirum = daftar_gaji_pegawai_df[mask].reset_index(drop=True)
+def _get_template_path(project_root: Path) -> Path:
+    return project_root / TEMPLATE_REL_PATH
 
-    mask = daftar_gaji_pegawai_df["status_pegawai"] == STATUS_PEGAWAI.KONTRAK.value
-    daftar_gaji_pegawai_kontrak_df=daftar_gaji_pegawai_df[mask].reset_index(drop=True)
 
-    # generate sheet direksi
-    # generate_direksi_sheet(wb, tahun, bulan, daftar_gaji_direksi_df, daftar_proses_gaji_direksi_df, dirum)
-    # generate_pegawai_sheet(wb, organisasi_df, tahun, bulan, daftar_gaji_pegawai_df, daftar_proses_gaji_df, dirum)
-    # generate_kontrak_sheet(wb, organisasi_df, tahun, bulan, daftar_gaji_pegawai_kontrak_df, daftar_proses_gaji_df, dirum)
-    generate_hgpkp_sheet(wb, organisasi_df, tahun, bulan, daftar_gaji_pegawai_df, daftar_proses_gaji_df)
+def _get_output_path(project_root: Path, batch_root_id: str) -> Path:
+    return project_root / OUTPUT_REL_DIR / f"daftar_gaji_{batch_root_id}.xlsx"
 
-    wb.remove(wb["pegawai"])
-    wb.remove(wb["kontrak"])
-    wb.remove(wb["HGPKP1"])
-    wb.remove(wb["HHTKKP1"])
-    wb.remove(wb["HG1"])
-    # wb.active = wb["HG"]
-    wb.save(f"{project_root}/result_excel/daftar_gaji_{batch_root_id}.xlsx")
+
+def _remove_template_sheets(wb) -> None:
+    # Safely remove template sheets if present
+    for name in SHEETS_TO_REMOVE:
+        if name in wb.sheetnames:
+            wb.remove(wb[name])
