@@ -15,6 +15,7 @@
       <w>bersih</w>
       <w>bpjs</w>
       <w>bulan</w>
+      <w>cabang</w>
       <w>calon</w>
       <w>capeg</w>
       <w>cursorclass</w>
@@ -31,6 +32,7 @@
       <w>duda</w>
       <w>februari</w>
       <w>golongan</w>
+      <w>halaman</w>
       <w>hgpkp</w>
       <w>hhtkkp</w>
       <w>hitung</w>
@@ -82,9 +84,11 @@
       <w>profil</w>
       <w>ptkp</w>
       <w>purwokerto</w>
+      <w>pusat</w>
       <w>referensi</w>
       <w>rumah</w>
       <w>rumdin</w>
+      <w>sampai</w>
       <w>sanksi</w>
       <w>satria</w>
       <w>saudara</w>
@@ -108,6 +112,7 @@
       <w>tunjangan</w>
       <w>umum</w>
       <w>uraian</w>
+      <w>urutan</w>
       <w>wati</w>
     </words>
   </dictionary>

@@ -1,28 +1,27 @@
+from datetime import datetime
 from openpyxl.worksheet.worksheet import Worksheet
 from openpyxl.cell.cell import Cell
 from openpyxl.styles import Font, Alignment, Border, Side
-
-from core.config import LOGGER
-from core.enums import EXCEL_TEXT_ALIGN
 
 other_option = {
     "start_row": None,
     "start_column": None,
     "end_row": None,
-    "end_column": None
+    "end_column": None,
 }
 
+NUMBER_FORMAT = "#,##0"
 
 def cell_builder(
-        worksheet: Worksheet,
-        row_num: int,
-        column_num: int,
-        content: str,
-        font_bold: bool = False,
-        border: dict | None = None,
-        vertical_alignment: str | None = None,
-        horizontal_alignment: str | None = None,
-) -> Cell:
+    worksheet: Worksheet,
+    row_num: int,
+    column_num: int,
+    content: str | float | int | datetime,
+    font_bold: bool = False,
+    border: dict | None = None,
+    vertical_alignment: str | None = None,
+    horizontal_alignment: str | None = None,
+):
     """Build a cell in the given worksheet at the given row number and column number.
 
     Args:
@@ -58,7 +57,9 @@ def cell_builder(
         style_bottom = Side(border["bottom"]) if "bottom" in border else None
         style_left = Side(border["left"]) if "left" in border else None
         style_right = Side(border["right"]) if "right" in border else None
-        cell.border = Border(top=style_top, bottom=style_bottom, left=style_left, right=style_right)
+        cell.border = Border(
+            top=style_top, bottom=style_bottom, left=style_left, right=style_right
+        )
 
     cell.alignment = Alignment(
         horizontal=horizontal_alignment,

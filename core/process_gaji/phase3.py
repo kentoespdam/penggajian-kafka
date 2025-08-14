@@ -6,10 +6,13 @@ import pandas as pd
 from openpyxl import load_workbook
 
 from core.config import LOGGER
+from core.enums import STATUS_PEGAWAI
 from core.helpers import cleanup_is_boolean, cleanup_empty_string
 from core.models.gaji_batch_master import fetch_daftar_gaji_pegawai
 from core.models.organisasi import fetch_organisasi_by_level
 from core.process_gaji.phase3_generate_direksi import generate_direksi_sheet
+from core.process_gaji.phase3_generate_hgpkp import generate_hgpkp_sheet
+from core.process_gaji.phase3_generate_kontrak import generate_kontrak_sheet
 from core.process_gaji.phase3_generate_pegawai import generate_pegawai_sheet
 
 _raw_types = {
@@ -87,9 +90,14 @@ def _generate_excel(
     mask = daftar_gaji_pegawai_df["level_id"] == 4
     dirum = daftar_gaji_pegawai_df[mask].reset_index(drop=True)
 
+    mask = daftar_gaji_pegawai_df["status_pegawai"] == STATUS_PEGAWAI.KONTRAK.value
+    daftar_gaji_pegawai_kontrak_df=daftar_gaji_pegawai_df[mask].reset_index(drop=True)
+
     # generate sheet direksi
-    generate_direksi_sheet(wb, tahun, bulan, daftar_gaji_direksi_df, daftar_proses_gaji_direksi_df, dirum)
-    generate_pegawai_sheet(wb, organisasi_df, tahun, bulan, daftar_gaji_pegawai_df, daftar_proses_gaji_df, dirum)
+    # generate_direksi_sheet(wb, tahun, bulan, daftar_gaji_direksi_df, daftar_proses_gaji_direksi_df, dirum)
+    # generate_pegawai_sheet(wb, organisasi_df, tahun, bulan, daftar_gaji_pegawai_df, daftar_proses_gaji_df, dirum)
+    # generate_kontrak_sheet(wb, organisasi_df, tahun, bulan, daftar_gaji_pegawai_kontrak_df, daftar_proses_gaji_df, dirum)
+    generate_hgpkp_sheet(wb, organisasi_df, tahun, bulan, daftar_gaji_pegawai_df, daftar_proses_gaji_df)
 
     wb.remove(wb["pegawai"])
     wb.remove(wb["kontrak"])

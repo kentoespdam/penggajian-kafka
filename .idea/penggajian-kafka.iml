@@ -6,7 +6,7 @@
       <excludeFolder url="file://$MODULE_DIR$/excel_template" />
       <excludeFolder url="file://$MODULE_DIR$/result_excel" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.12 (penggajian-kafka)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.12 virtualenv at D:\python\penggajian-kafka\.venv" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PyDocumentationSettings">

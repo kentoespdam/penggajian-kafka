@@ -216,7 +216,7 @@ def _calculate_nilai_formula(
             formula, nilai_komponen)
 
         try:
-            nilai = round(safe_eval(nilai_formula), 2)
+            nilai = round(safe_eval(nilai_formula), 0)
         except Exception as error:
             LOGGER.info(
                 f"Error evaluating formula: {error} for {master_row['nipam']} {master_row['nama']} {row['kode']} {row['formula']} {nilai_formula}")

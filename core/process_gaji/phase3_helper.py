@@ -7,6 +7,20 @@ from openpyxl.worksheet.worksheet import Worksheet
 from core.excel_helper import cell_builder
 from core.helpers import get_nama_bulan
 
+main_columns = [
+    ["GP", "0", "TUNJ_JABATAN", "TUNJ_AIR", "POT_PENSIUN", "POT_ASKES", "PENGHASILAN_BERSIH_FINAL"],
+    ["", "", "", "", "TUNJ_SI", "0", "TUNJ_BERAS", "TUNJ_PPH21", "POT_ASTEK", "POT_TKK", "", ""],
+    ["", "", "", "", "TUNJ_ANAK", "", "TUNJ_KK", "PENGHASILAN_KOTOR", "SEWA_RUDIN", "POT_PPH21", "", ""],
+    ["", "", "", "", "JUMLAH", "", "TUNJ_KESEHATAN", "PEMBULATAN", "POT_JP", "POTONGAN", "", ""]
+]
+
+total_columns = [
+    ["GP", "0", "TUNJ_JABATAN", "TUNJ_AIR", "POT_PENSIUN", "POT_ASKES", "PENGHASILAN_BERSIH_FINAL", ""],
+    ["TUNJ_SI", "0", "TUNJ_BERAS", "TUNJ_PPH21", "POT_ASTEK", "POT_TKK", "", ""],
+    ["TUNJ_ANAK", "", "TUNJ_KK", "PENGHASILAN_KOTOR", "SEWA_RUDIN", "POT_PPH21", "", ""],
+    ["JUMLAH", "", "TUNJ_KESEHATAN", "PEMBULATAN", "POT_JP", "POTONGAN", "", ""]
+]
+
 
 def get_total_salary(salary_process_df: pd.DataFrame, employee_id: pd.Series) -> float:
     """Get the total salary of an employee based on the given parameters."""
@@ -53,6 +67,7 @@ def generate_footer_title(worksheet: Worksheet, row_num: int, row_data: pd.DataF
     worksheet.merge_cells(start_row=row_num, start_column=3,
                           end_column=4, end_row=row_num + 3)
     return row_num + 3
+
 
 def generate_ttd(
         worksheet: Worksheet,
