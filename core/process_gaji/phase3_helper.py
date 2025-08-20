@@ -4,6 +4,7 @@ import pandas as pd
 from openpyxl.styles import Font
 from openpyxl.worksheet.worksheet import Worksheet
 
+from core.enums import STATUS_PEGAWAI
 from core.excel_helper import cell_builder
 from core.helpers import get_nama_bulan
 
@@ -21,6 +22,8 @@ total_columns = [
     ["JUMLAH", "", "TUNJ_KESEHATAN", "PEMBULATAN", "POT_JP", "POTONGAN", "", ""]
 ]
 
+DIREKSI_LEVEL_IDS: tuple[int, ...] = (2, 3, 4)
+DIRUM_LEVEL_ID: int = 4
 
 def get_total_salary(salary_process_df: pd.DataFrame, employee_id: pd.Series) -> float:
     """Get the total salary of an employee based on the given parameters."""
@@ -96,3 +99,37 @@ def generate_ttd(
     for _ in range(3): next(row_index)
     build_cell(employee_data["nama"].values[0])
     build_cell(f"NIPAM. {employee_data['nipam'].values[0]}")
+
+
+def filter_kontrak_pegawai(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Filter contract employees based on the status_pegawai column.
+    """
+    is_kontrak = df["status_pegawai"].eq(STATUS_PEGAWAI.KONTRAK.value)
+    return df.loc[is_kontrak].reset_index(drop=True)
+
+
+def filter_komponen_gaji_by_kode(komponen_gaji_df: pd.DataFrame, kode: str) -> pd.DataFrame:
+    """
+    Filters a DataFrame of 'komponen_gaji' by the specified 'kode' value.
+
+    This function searches for rows in the provided DataFrame where the value in
+    the "kode" column matches the specified 'kode'. It returns a new DataFrame
+    containing only the matched rows with their index reset.
+
+    Parameters:
+        komponen_gaji_df (pd.DataFrame): The DataFrame containing the 'komponen_gaji'
+        data to filter. It must include a column named "kode".
+        kode (str): The specific value to match in the "kode" column.
+
+    Returns:
+        pd.DataFrame: A DataFrame containing rows from 'komponen_gaji_df' where the
+        "kode" column matches the specified 'kode', with the index reset.
+    """
+    mask = komponen_gaji_df["kode"].eq(kode)
+    return komponen_gaji_df.loc[mask].reset_index(drop=True)
+
+
+def calculate_total_nilai_by_kode_organisasi(komponen_df: pd.DataFrame, kode_organisasi: str) -> float:
+    cabang_mask = komponen_df["kode_organisasi"].str.startswith(kode_organisasi)
+    return komponen_df[cabang_mask]["nilai"].sum()

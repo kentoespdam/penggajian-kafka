@@ -2,6 +2,7 @@
   <dictionary name="project">
     <words>
       <w>aktif</w>
+      <w>ambil</w>
       <w>anak</w>
       <w>asctime</w>
       <w>askes</w>
@@ -11,6 +12,7 @@
       <w>baru</w>
       <w>belum</w>
       <w>beras</w>
+      <w>berdasarkan</w>
       <w>berhenti</w>
       <w>bersih</w>
       <w>bpjs</w>
@@ -22,6 +24,7 @@
       <w>daftar</w>
       <w>dengan</w>
       <w>desember</w>
+      <w>dibayar</w>
       <w>direkomendasikan</w>
       <w>direksi</w>
       <w>direktur</w>
@@ -31,8 +34,11 @@
       <w>ditolak</w>
       <w>duda</w>
       <w>februari</w>
+      <w>gapok</w>
       <w>golongan</w>
       <w>halaman</w>
+      <w>hanya</w>
+      <w>harus</w>
       <w>hgpkp</w>
       <w>hhtkkp</w>
       <w>hitung</w>
@@ -41,8 +47,10 @@
       <w>iuran</w>
       <w>jabatan</w>
       <w>jaminan</w>
+      <w>jamsostek</w>
       <w>januari</w>
       <w>jenis</w>
+      <w>jika</w>
       <w>jiwa</w>
       <w>jumlah</w>
       <w>juni</w>
@@ -50,6 +58,7 @@
       <w>kantor</w>
       <w>karyawan</w>
       <w>kegiatan</w>
+      <w>kekurangan</w>
       <w>keluar</w>
       <w>keluarga</w>
       <w>kena</w>
@@ -62,14 +71,19 @@
       <w>lamaran</w>
       <w>levelname</w>
       <w>maksimal</w>
+      <w>mengetahui</w>
       <w>menikah</w>
+      <w>nasional</w>
       <w>nilai</w>
       <w>nipam</w>
       <w>oktober</w>
       <w>organisasi</w>
       <w>pajak</w>
       <w>pangkat</w>
+      <w>pasal</w>
+      <w>pdam</w>
       <w>pegawai</w>
+      <w>pelaksana</w>
       <w>pemasukan</w>
       <w>pembulatan</w>
       <w>pemda</w>
@@ -95,6 +109,7 @@
       <w>saudara</w>
       <w>sekantor</w>
       <w>sekolah</w>
+      <w>selain</w>
       <w>seleksi</w>
       <w>selesai</w>
       <w>sewa</w>
@@ -103,6 +118,7 @@
       <w>tahap</w>
       <w>tahun</w>
       <w>tambahan</w>
+      <w>tanggal</w>
       <w>tanggungan</w>
       <w>teguran</w>
       <w>telah</w>
@@ -115,6 +131,7 @@
       <w>umum</w>
       <w>uraian</w>
       <w>urutan</w>
+      <w>utama</w>
       <w>wati</w>
     </words>
   </dictionary>

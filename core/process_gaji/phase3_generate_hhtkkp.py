@@ -1,14 +1,15 @@
 # Python
 import itertools
 from datetime import datetime
+
 import pandas as pd
 from openpyxl import Workbook
 from openpyxl.worksheet.worksheet import Worksheet
+
 from core.config import LOGGER
-from core.enums import STATUS_PEGAWAI
-from core.excel_helper import cell_builder, NUMBER_FORMAT
+from core.excel_helper import cell_builder, NUMBER_FORMAT, copy_sheet_from_template
 from core.helpers import get_nama_bulan
-from core.process_gaji.phase3_helper import get_sub_component_value
+from core.process_gaji.phase3_helper import get_sub_component_value, filter_kontrak_pegawai
 
 # Constants
 _TEMPLATE_SHEET_NAME = "HHTKKP1"
@@ -49,14 +50,14 @@ def generate_hhtkkp_sheet(
     LOGGER.info("Starting phase3: build HHTKKP (Himpunan Honor Tenaga Kontrak Kantor Pusat)")
 
     # Prepare worksheet from template
-    worksheet = _copy_sheet_from_template(workbook, _TEMPLATE_SHEET_NAME, _OUTPUT_SHEET_NAME)
+    worksheet = copy_sheet_from_template(workbook, _TEMPLATE_SHEET_NAME, _OUTPUT_SHEET_NAME)
     worksheet.cell(row=_HEADER_ROW, column=1, value=f"Bulan: {get_nama_bulan(month)} {year}")
 
     # Filter non-branch organizations
     pusat_org_df = _filter_non_cabang(organisasi_df)
 
     # Filter contract employees and normalize their org codes to align with organisasi codes
-    kontrak_df = _filter_kontrak_pegawai(gaji_pegawai_df).copy()
+    kontrak_df = filter_kontrak_pegawai(gaji_pegawai_df).copy()
     kontrak_df.loc[:, "kode_organisasi"] = _normalize_kode_organisasi(kontrak_df["kode_organisasi"])
 
     # Keep only organizations referenced by contract employees
@@ -101,16 +102,6 @@ def generate_hhtkkp_sheet(
     LOGGER.info(f"Finished building HHTKKP in {elapsed}")
 
 
-def _copy_sheet_from_template(workbook: Workbook, template_name: str, new_title: str) -> Worksheet:
-    """
-    Copy a template sheet by name and retitle the copy.
-    """
-    workbook.active = workbook[template_name]
-    ws = workbook.copy_worksheet(workbook.active)
-    ws.title = new_title
-    return ws
-
-
 def _filter_non_cabang(organisasi_df: pd.DataFrame) -> pd.DataFrame:
     """
     Keep only non-branch (non-CABANG) organizations.
@@ -126,15 +117,6 @@ def _normalize_kode_organisasi(kode_series: pd.Series) -> pd.Series:
     - Otherwise keep the first 5 characters
     """
     return kode_series.apply(lambda x: x[:3] if len(x) == 5 else x[:5])
-
-
-def _filter_kontrak_pegawai(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Filter contract employees based on the status_pegawai column.
-    """
-    # is_kontrak = df["status_pegawai"].eq(STATUS_PEGAWAI.KONTRAK.value)
-    is_kontrak = df["status_pegawai"].eq(STATUS_PEGAWAI.PEGAWAI.value)
-    return df.loc[is_kontrak].reset_index(drop=True)
 
 
 def _filter_components_by_batch_ids(komponen_gaji_df: pd.DataFrame, batch_ids: pd.Series) -> pd.DataFrame:

@@ -15,7 +15,7 @@ def _setup_nilai_referensi_komponen_gaji(
         potongan_tkk_df: pd.DataFrame,
         gaji_batch_potongan_tkk_df: pd.DataFrame,
         gaji_pendapatan_non_pajak_df: pd.DataFrame
-) -> int or float:
+):
     """
     Set up nilai referensi komponen gaji given kode, master_row, and relevant dataframes.
 
@@ -145,25 +145,17 @@ def _cleanup_nilai_referensi_komponen_gaji(
 
     Parameters
     ----------
-    df : pd.Series
-        Series of nilai referensi komponen gaji
-    master_row : pd.Series
-        Series of master data row
-    tunjangan_df : pd.DataFrame
-        Dataframe of tunjangan
-    rumah_dinas_df : pd.DataFrame
-        Dataframe of rumah dinas
-    potongan_tkk_df : pd.DataFrame
-        Dataframe of potongan TKK
-    gaji_batch_potongan_tkk_df : pd.DataFrame
-        Dataframe of potongan TKK for this batch
-    gaji_pendapatan_non_pajak_df : pd.DataFrame
-        Dataframe of pendapatan non pajak
+    df : pd.Series of nilai referensi komponen gaji
+    master_row : pd.Series of master data row
+    tunjangan_df : pd.DataFrame of tunjangan
+    rumah_dinas_df : pd.DataFrame of rumah dinas
+    potongan_tkk_df : pd.DataFrame of potongan TKK
+    gaji_batch_potongan_tkk_df : pd.DataFrame of potongan TKK for this batch
+    gaji_pendapatan_non_pajak_df : pd.DataFrame of pendapatan non pajak
 
     Returns
     -------
-    pd.Series
-        Series of nilai referensi komponen gaji with actual values
+    pd.Series of nilai referensi komponen gaji with actual values
     """
     return df.apply(
         lambda x: x if pd.isna(x) else _setup_nilai_referensi_komponen_gaji(
@@ -186,8 +178,7 @@ def _calculate_nilai_formula(
 
     Parameters
     ----------
-    komponen_gaji_df : pd.DataFrame
-        Dataframe of komponen gaji
+    komponen_gaji_df : pd.DataFrame of komponen gaji
     master_row : pd.Series
         Series of master_data row
     maksimal_potongan : dict
@@ -195,8 +186,7 @@ def _calculate_nilai_formula(
 
     Returns
     -------
-    pd.DataFrame
-        Dataframe of komponen gaji with calculated nilai
+    pd.DataFrame of komponen gaji with calculated nilai
     """
     for index, row in komponen_gaji_df.iterrows():
         nilai_komponen = {str(komponen["kode"]): komponen["nilai"] for _, komponen in
@@ -216,9 +206,9 @@ def _calculate_nilai_formula(
             formula, nilai_komponen)
 
         try:
-            nilai = round(safe_eval(nilai_formula), 0)
+            nilai = round(safe_eval(nilai_formula))
         except Exception as error:
-            LOGGER.info(
+            LOGGER.error(
                 f"Error evaluating formula: {error} for {master_row['nipam']} {master_row['nama']} {row['kode']} {row['formula']} {nilai_formula}")
             continue
 
@@ -241,15 +231,12 @@ def _applying_dataframe(df: pd.DataFrame, mbp_df: pd.DataFrame) -> pd.DataFrame:
 
     Parameters
     ----------
-    df : pd.DataFrame
-        Dataframe to apply mapping to
-    mbp_df : pd.DataFrame
-        Dataframe of master batch process
+    df : pd.DataFrame to apply mapping to
+    mbp_df : pd.DataFrame of master batch process
 
     Returns
     -------
-    pd.DataFrame
-        Dataframe with applied mapping
+    pd.DataFrame with applied mapping
     """
     # Define a mapping of dataframe columns to their corresponding codes
     columns_mapping = {

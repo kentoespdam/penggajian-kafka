@@ -1,10 +1,12 @@
 import itertools
+from datetime import datetime
 
 import pandas as pd
 from openpyxl.styles import Alignment, Font
 from openpyxl.workbook import Workbook
 from openpyxl.worksheet.worksheet import Worksheet
 
+from core.config import LOGGER
 from core.enums import STATUS_PEGAWAI
 from core.excel_helper import cell_builder, NUMBER_FORMAT
 from core.helpers import get_nama_bulan
@@ -31,6 +33,9 @@ def generate_hgpkp_sheet(
         gaji_pegawai_df : pd.DataFrame containing the list of pegawai.
         komponen_gaji_df : pd.DataFrame containing the list of komponen gaji for each pegawai.
     """
+    start_time = datetime.now()
+    LOGGER.info(f"Starting phase3: Generate HGPKP sheet for year {year} and month {month}")
+
     workbook.active = workbook["HGPKP1"]
     worksheet = workbook.copy_worksheet(workbook.active)
     worksheet.title = "HGPKP"
@@ -61,13 +66,13 @@ def generate_hgpkp_sheet(
     organisasi_pusat_df = organisasi_df[non_cabang_mask].reset_index(drop=True)
 
     for _, organisasi in organisasi_pusat_df.iterrows():
-        pegawai_mask = (
-                           gaji_pegawai_df["kode_organisasi"].str.startswith(f"{organisasi['kode']}")
-                       ) & (gaji_pegawai_df["status_pegawai"] != STATUS_PEGAWAI.KONTRAK.value)
-        pegawai_ids = gaji_pegawai_df[pegawai_mask]["id"].tolist()
+        organisasi_mask = gaji_pegawai_df["kode_organisasi"].str.startswith(f"{organisasi['kode']}")
+        pegawai_mask = gaji_pegawai_df["status_pegawai"] != STATUS_PEGAWAI.KONTRAK.value
+        mask = organisasi_mask & pegawai_mask
+        pegawai_ids = tuple(gaji_pegawai_df[mask]["id"].to_list())
 
-        komponen_gaji_organisasi = komponen_gaji_df[komponen_gaji_df["batch_master_id"].isin(pegawai_ids)].reset_index(
-            drop=True)
+        mask = komponen_gaji_df["batch_master_id"].isin(pegawai_ids)
+        komponen_gaji_organisasi = komponen_gaji_df[mask].reset_index(drop=True)
 
         next_row = _generate_row(
             worksheet,
@@ -106,6 +111,8 @@ def generate_hgpkp_sheet(
     jml_cell.alignment = Alignment(horizontal="center", vertical="center")
     jml_cell.font = Font(bold=True)
 
+    elapsed_time = datetime.now() - start_time
+    LOGGER.info(f"Finished phase3: Generate HGPKP sheet for year {year} and month {month} in {elapsed_time}")
 
 def _generate_row(
         worksheet: Worksheet,

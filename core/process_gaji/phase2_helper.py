@@ -22,11 +22,34 @@ def _filter_rumah_dinas(rumah_dinas_df: pd.DataFrame, rumah_dinas_id: int) -> fl
 
 def _filter_potongan_tkk(gaji_batch_potongan_tkk_df: pd.DataFrame, status_pegawai: int, level_id: int,
                          golongan_id: int) -> float:
-    filtered_df = gaji_batch_potongan_tkk_df.query(
-        "(status_pegawai == @status_pegawai) & (level_id == @level_id) & (golongan_id == @golongan_id)"
-    ).reset_index(drop=True)
+    """
+       Find the nominal potongan TKK based on employee status and either level or golongan.
 
-    return filtered_df["nominal"].values[0] if not filtered_df.empty else 0
+       Rules:
+       - Always filter by status_pegawai.
+       - If status_pegawai requires granular match (value == STATUS_REQUIRES_LEVEL_OR_GOLOGAN):
+         - If level_id equals LEVEL_USES_GOLOGAN, match by golongan_id.
+         - Otherwise, match by level_id.
+       Returns 0.0 if no matching row exists.
+       """
+
+    status_requires_level_or_golongan = 2
+    level_uses_golongan = 7
+
+    # Base filter: status is always required
+    mask = gaji_batch_potongan_tkk_df["status_pegawai"].eq(status_pegawai)
+
+    # Apply additional filters only when required
+    if status_pegawai == status_requires_level_or_golongan:
+        if level_id == level_uses_golongan:
+            mask &= gaji_batch_potongan_tkk_df["golongan_id"].eq(golongan_id)
+        else:
+            mask &= gaji_batch_potongan_tkk_df["level_id"].eq(level_id)
+
+    # Select only the 'nominal' column for efficiency and clarity
+    nominal_series = gaji_batch_potongan_tkk_df.loc[mask, "nominal"]
+
+    return nominal_series.iloc[0] if not nominal_series.empty else 0.0
 
 
 def _filter_pendapatan_non_pajak(gaji_pendapatan_non_pajak_df: pd.DataFrame, kode_pajak: str) -> float:
@@ -36,7 +59,8 @@ def _filter_pendapatan_non_pajak(gaji_pendapatan_non_pajak_df: pd.DataFrame, kod
 
 
 def _filter_jml_potongan_tkk(potongan_tkk_df: pd.DataFrame, nipam: str) -> float:
-    filtered_df = potongan_tkk_df.query("nipam == @nipam").reset_index(drop=True)
+    mask = potongan_tkk_df["nipam"].eq(nipam)
+    filtered_df = potongan_tkk_df[mask].reset_index(drop=True)
 
     return filtered_df["potongan"].values[0] if not filtered_df.empty else 0
 

@@ -32,7 +32,7 @@ def generate_sheet_per_organisasi(
         row_num = itertools.count(start=next_row)
 
     next_row = _generate_footer(
-        worksheet, next(row_num) - 1, nama_organisasi, pegawai_df, komponen_gaji_df
+        worksheet, next(row_num), nama_organisasi, pegawai_df, komponen_gaji_df
     )
     row_num = itertools.count(start=next_row + 1)
     generate_ttd(worksheet, next(row_num), dirum, year, month)

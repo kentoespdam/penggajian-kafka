@@ -71,7 +71,7 @@ def calculate_gaji_detail(root_batch_id: str) -> PROCESS_GAJI_STATUS:
     return PROCESS_GAJI_STATUS.SUCCESS
 
 
-def process_gaji_komponen_detail(batch_root_id: str, master_df: pd.DataFrame) -> (PROCESS_GAJI_STATUS, pd.DataFrame):
+def process_gaji_komponen_detail(batch_root_id: str, master_df: pd.DataFrame) -> pd.DataFrame:
     """
     Process gaji komponen detail for the given batch and master data
 
@@ -172,7 +172,7 @@ def generate_result_gaji_batch_master(
     spinner = ['|', '/', '-', '\\']
     total_rows = batch_master_df["id"].size - 1
     for index, master_row in batch_master_df.iterrows():
-        # if master_row["nipam"] != "900800456":
+        # if master_row["nipam"] != "830500484":
         #     continue
 
         LOGGER.debug(f'Processing salary component details for {master_row["nipam"]} - {master_row["nama"]}')

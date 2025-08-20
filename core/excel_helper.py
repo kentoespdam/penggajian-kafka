@@ -1,7 +1,8 @@
 from datetime import datetime
-from openpyxl.worksheet.worksheet import Worksheet
-from openpyxl.cell.cell import Cell
+
+from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, Border, Side
+from openpyxl.worksheet.worksheet import Worksheet
 
 other_option = {
     "start_row": None,
@@ -12,15 +13,16 @@ other_option = {
 
 NUMBER_FORMAT = "#,##0"
 
+
 def cell_builder(
-    worksheet: Worksheet,
-    row_num: int,
-    column_num: int,
-    content: str | float | int | datetime,
-    font_bold: bool = False,
-    border: dict | None = None,
-    vertical_alignment: str | None = None,
-    horizontal_alignment: str | None = None,
+        worksheet: Worksheet,
+        row_num: int,
+        column_num: int,
+        content: str | float | int | datetime,
+        font_bold: bool = False,
+        border: dict | None = None,
+        vertical_alignment: str | None = None,
+        horizontal_alignment: str | None = None,
 ):
     """Build a cell in the given worksheet at the given row number and column number.
 
@@ -40,18 +42,6 @@ def cell_builder(
     cell = worksheet.cell(row=row_num, column=column_num)
     cell.value = content
 
-    # if border:
-    #     border_chars = list(border.lower())
-    #     border_list = []
-    #     if "t" in border_chars:
-    #         border_list.append(("top", Side(style="thin")))
-    #     if "b" in border_chars:
-    #         border_list.append(("bottom", Side(style="thin")))
-    #     if "l" in border_chars:
-    #         border_list.append(("left", Side(style="thin")))
-    #     if "r" in border_chars:
-    #         border_list.append(("right", Side(style="thin")))
-    #     cell.border = Border(**dict(border_list))
     if border:
         style_top = Side(border["top"]) if "top" in border else None
         style_bottom = Side(border["bottom"]) if "bottom" in border else None
@@ -70,3 +60,13 @@ def cell_builder(
         cell.font = Font(bold=True)
 
     return cell
+
+
+def copy_sheet_from_template(workbook: Workbook, template_name: str, new_title: str) -> Worksheet:
+    """
+    Copy a template sheet by name and retitle the copy.
+    """
+    workbook.active = workbook[template_name]
+    ws = workbook.copy_worksheet(workbook.active)
+    ws.title = new_title
+    return ws

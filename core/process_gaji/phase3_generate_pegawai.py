@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pandas as pd
 from openpyxl import Workbook
 
@@ -16,6 +18,9 @@ def generate_pegawai_sheet(
         daftar_proses_gaji_pegawai_df: pd.DataFrame,
         dirum: pd.DataFrame
 ):
+    start_time = datetime.now()
+    LOGGER.info(f"Starting phase3: Generate per organisasi sheet for year {year} and month {month}")
+
     workbook.active = workbook["pegawai"]
     worksheet = workbook.active
 
@@ -36,4 +41,6 @@ def generate_pegawai_sheet(
 
         generate_sheet_per_organisasi(current_sheet, pegawai_df, komponen_gaji_df, organisasi["nama"], dirum, year,
                                       month)
-        LOGGER.info(f"organisasi: {organisasi['short_name']}")
+
+    elapsed = datetime.now() - start_time
+    LOGGER.info(f"Generate per organisasi sheet finished in {elapsed}")

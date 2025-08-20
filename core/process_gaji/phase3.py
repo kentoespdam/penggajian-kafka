@@ -11,10 +11,12 @@ from core.helpers import cleanup_is_boolean, cleanup_empty_string
 from core.models.gaji_batch_master import fetch_daftar_gaji_pegawai
 from core.models.organisasi import fetch_organisasi_by_level
 from core.process_gaji.phase3_generate_direksi import generate_direksi_sheet
+from core.process_gaji.phase3_generate_hg import generate_hg_sheet
 from core.process_gaji.phase3_generate_hgpkp import generate_hgpkp_sheet
 from core.process_gaji.phase3_generate_hhtkkp import generate_hhtkkp_sheet
 from core.process_gaji.phase3_generate_kontrak import generate_kontrak_sheet
 from core.process_gaji.phase3_generate_pegawai import generate_pegawai_sheet
+from core.process_gaji.phase3_helper import DIREKSI_LEVEL_IDS, DIRUM_LEVEL_ID
 
 _raw_types = {
     "id": int,
@@ -59,8 +61,6 @@ COLUMNS_PROSES_GAJI = [
 ]
 
 # Constants
-DIREKSI_LEVEL_IDS: tuple[int, ...] = (2, 3, 4)
-DIRUM_LEVEL_ID: int = 4
 TEMPLATE_REL_PATH = "excel_template/daftar_gaji_template.xlsx"
 OUTPUT_REL_DIR = "result_excel"
 SHEETS_TO_REMOVE: tuple[str, ...] = ("pegawai", "kontrak", "HGPKP1", "HHTKKP1", "HG1")
@@ -131,11 +131,12 @@ def _generate_excel(
     daftar_gaji_pegawai_kontrak_df = daftar_gaji_pegawai_df.loc[is_kontrak].reset_index(drop=True)
 
     # Generate sheets
-    # generate_direksi_sheet(wb, year, month, daftar_gaji_direksi_df, komponen_gaji_direksi_df, dirum_df)
-    # generate_pegawai_sheet(wb, organisasi_df, year, month, daftar_gaji_pegawai_df, komponen_gaji_df, dirum_df)
-    # generate_kontrak_sheet(wb, organisasi_df, year, month, daftar_gaji_pegawai_kontrak_df, komponen_gaji_df, dirum_df)
-    # generate_hgpkp_sheet(wb, organisasi_df, year, month, daftar_gaji_pegawai_df, komponen_gaji_df)
+    generate_direksi_sheet(wb, year, month, daftar_gaji_direksi_df, komponen_gaji_direksi_df, dirum_df)
+    generate_pegawai_sheet(wb, organisasi_df, year, month, daftar_gaji_pegawai_df, komponen_gaji_df, dirum_df)
+    generate_kontrak_sheet(wb, organisasi_df, year, month, daftar_gaji_pegawai_kontrak_df, komponen_gaji_df, dirum_df)
+    generate_hgpkp_sheet(wb, organisasi_df, year, month, daftar_gaji_pegawai_df, komponen_gaji_df)
     generate_hhtkkp_sheet(wb, organisasi_df, year, month, daftar_gaji_pegawai_df, komponen_gaji_df)
+    generate_hg_sheet(wb, organisasi_df, year, month, daftar_gaji_pegawai_df, komponen_gaji_df)
 
     # Cleanup template sheets and save
     _remove_template_sheets(wb)

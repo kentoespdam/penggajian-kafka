@@ -14,6 +14,12 @@ KAFKA_GROUP_ID = os.getenv('KAFKA_GROUP_ID')
 PENGGAJIAN_TOPIC = os.getenv('PENGGAJIAN_TOPIC')
 HITUNG_ULANG_TOPIC = os.getenv('HITUNG_ULANG_TOPIC')
 
+KODE_CABANG_PWT1 = str(os.getenv('KODE_CABANG_PWT1'))
+KODE_CABANG_PWT2 = str(os.getenv('KODE_CABANG_PWT2'))
+KODE_CABANG_AJB = str(os.getenv('KODE_CABANG_AJB'))
+KODE_CABANG_WGN = str(os.getenv('KODE_CABANG_WGN'))
+KODE_CABANG_BMS = str(os.getenv('KODE_CABANG_BMS'))
+
 
 def get_connection_pool(autocommit: bool = False) -> Connection:
     config = {

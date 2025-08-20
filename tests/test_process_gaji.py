@@ -1,7 +1,8 @@
 import logging
 
 logging.basicConfig(level='DEBUG',
-                    format='%(asctime)s [%(levelname)8s] %(message)s (%(filename)s:%(lineno)s)', encoding='utf-8')
+                    format='%(asctime)s [%(levelname)8s] %(message)s (%(filename)s:%(lineno)s)',
+                    encoding='utf-8')
 
 
 class TestProcessGaji:
