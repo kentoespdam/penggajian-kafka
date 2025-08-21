@@ -1,6 +1,8 @@
 from math import ceil
+
 import pandas as pd
-from core.config import get_connection_pool, LOGGER
+
+from core.config import get_connection_pool
 from core.enums import JENIS_GAJI
 
 # Column name constants
@@ -36,7 +38,7 @@ def _compute_net_income(total_pemasukan: float, total_potongan: float) -> float:
 
 def _compute_pembulatan_to_next_100(amount: float) -> float:
     """
-    Compute the rounding up adjustment to reach the next hundred.
+    Compute the rounding-up adjustment to reach the next hundred.
     Example: amount=123 -> pembulatan= (200-123)=77
     """
     return round((ceil(amount / 100) * 100) - amount, 2)
