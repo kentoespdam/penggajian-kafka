@@ -308,3 +308,48 @@ def fetch_daftar_potongan_gaji_by_batch_root_id(batch_root_id: str) -> pd.DataFr
         with connection.cursor() as cursor:
             cursor.execute(query, (batch_root_id,))
             return pd.DataFrame(cursor.fetchall())
+
+
+def fetch_all_gaji_batch_master_by_batch_root_id(batch_root_id: str):
+    query = "SELECT * FROM gaji_batch_master WHERE batch_root_id = %s"
+    with get_connection_pool() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(query, (batch_root_id,))
+            result = cursor.fetchall()
+            return pd.DataFrame(result)
+
+
+def rollback_additional_gaji_batch_master_by_batch_root_id(batch_root_id: str) -> str:
+    query = """
+            UPDATE gaji_batch_master
+            SET total_add_tambahan        = 0,
+                total_add_potongan        = 0,
+                penghasilan_bersih2       = 0,
+                pembulatan2               = 0,
+                penghasilan_bersih_final2 = 0
+            WHERE batch_root_id = %s
+            """
+
+    with get_connection_pool() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(query, (batch_root_id,))
+            conn.commit()
+            return f"{conn.affected_rows()} rows affected"
+
+
+def rollback_additional_gaji_batch_master_by_id(batch_master_id: str) -> str:
+    query = """
+            UPDATE gaji_batch_master
+            SET total_add_tambahan        = 0,
+                total_add_potongan        = 0,
+                penghasilan_bersih2       = 0,
+                pembulatan2               = 0,
+                penghasilan_bersih_final2 = 0
+            WHERE id = %s
+            """
+
+    with get_connection_pool() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(query, (batch_master_id,))
+            conn.commit()
+            return f"{conn.affected_rows()} rows affected"

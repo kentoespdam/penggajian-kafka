@@ -76,7 +76,7 @@ def _prepare_komponen_data(
         gaji_pegawai_df: pd.DataFrame,
         komponen_gaji_df: pd.DataFrame
 ) -> KomponenData:
-    # Split organizations by CABANG vs non-CABANG
+    # Split organizations by CABANG and non-CABANG
     organisasi_pusat_df = filter_organisasi(organisasi_df)
     organisasi_cabang_df = filter_organisasi(organisasi_df, True)
 
