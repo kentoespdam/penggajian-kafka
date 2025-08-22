@@ -15,6 +15,6 @@ tmp/temp.xlsx
 .idea/dataSources/
 .idea/dataSources.local.xml
 /tmp/*
-/tests/gaji_*.json
+/tests/*.json
 /gaji_*.json
 /.idea/dataSources.xml

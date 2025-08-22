@@ -1,6 +1,7 @@
 import ast
 import math
 import operator
+from datetime import datetime, timedelta
 
 import pandas as pd
 
@@ -15,7 +16,8 @@ def cleanup_is_boolean(x):
 def cleanup_empty_string(x):
     if pd.isna(x):
         return ''
-    return  x if x is not None else ''
+    return x if x is not None else ''
+
 
 def safe_eval(expression: str):
     # Allowed operators
@@ -87,3 +89,29 @@ def get_nilai_komponen(proses_gaji_df: pd.DataFrame, batch_master_id: pd.Series,
         ].reset_index(drop=True)
 
     return filtered_df["nilai"].values[0] if not filtered_df.empty else 0
+
+
+def get_previous_period(period: str) -> str:
+    """
+    Given a period string in 'YYYYMM' format, return the previous month in the same format.
+    Examples:
+        '202401' -> '202312'
+        '202312' -> '202311'
+    Raises:
+        ValueError: If the input is not a valid 'YYYYMM' string.
+    """
+    try:
+        dt = datetime.strptime(period, "%Y%m")
+    except ValueError as exc:
+        raise ValueError(f"Invalid period '{period}'. Expected format 'YYYYMM'.") from exc
+
+    prev_month = dt.replace(day=1) - timedelta(days=1)
+    return prev_month.strftime("%Y%m")
+
+
+def extract_period_year_month(batch_root_id: str) -> tuple[str, int, int]:
+    """
+    Extract periode (YYYYMM), tahun (YYYY), and bulan (MM) from a batch_root_id like '202502-001'.
+    """
+    periode = batch_root_id.split("-")[0]
+    return periode, int(periode[0:4]), int(periode[4:6])

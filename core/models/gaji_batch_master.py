@@ -298,10 +298,11 @@ def fetch_daftar_potongan_gaji_by_batch_root_id(batch_root_id: str) -> pd.DataFr
                    gbm.nama,
                    gbm.level_id,
                    org.kode AS kode_organisasi,
-                   gbm.penghasilan_bersih
+                   gbm.penghasilan_bersih + gbm.pembulatan AS gaji
             FROM gaji_batch_master AS gbm
                      INNER JOIN organisasi AS org ON gbm.organisasi_id = org.id
             WHERE gbm.batch_root_id = %s
+            ORDER BY gbm.level_id ASC, gbm.golongan DESC
             """
 
     with get_connection_pool() as connection:

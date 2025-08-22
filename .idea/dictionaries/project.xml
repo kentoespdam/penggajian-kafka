@@ -47,6 +47,7 @@
       <w>istri</w>
       <w>iuran</w>
       <w>jabatan</w>
+      <w>jalan</w>
       <w>jaminan</w>
       <w>jamsostek</w>
       <w>januari</w>
@@ -74,6 +75,7 @@
       <w>maksimal</w>
       <w>mengetahui</w>
       <w>menikah</w>
+      <w>minum</w>
       <w>nasional</w>
       <w>nilai</w>
       <w>nipam</w>
@@ -90,12 +92,14 @@
       <w>pemasukan</w>
       <w>pembulatan</w>
       <w>pemda</w>
+      <w>pemerintah</w>
       <w>pendapatan</w>
       <w>penggajian</w>
       <w>penghasilan</w>
       <w>pensiun</w>
       <w>periode</w>
       <w>perumdam</w>
+      <w>perusahaan</w>
       <w>phdp</w>
       <w>pokok</w>
       <w>potongan</w>
@@ -119,6 +123,7 @@
       <w>spreadsheetml</w>
       <w>suami</w>
       <w>sudrajat</w>
+      <w>suharso</w>
       <w>tahap</w>
       <w>tahun</w>
       <w>tambahan</w>
@@ -126,6 +131,7 @@
       <w>tanggungan</w>
       <w>teguran</w>
       <w>telah</w>
+      <w>telp</w>
       <w>tenaga</w>
       <w>tidak</w>
       <w>tirta</w>
@@ -137,6 +143,7 @@
       <w>urutan</w>
       <w>utama</w>
       <w>wati</w>
+      <w>yyyymm</w>
     </words>
   </dictionary>
 </component>

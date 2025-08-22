@@ -13,6 +13,12 @@ other_option = {
 
 NUMBER_FORMAT = "#,##0"
 
+# Border constants
+BORDER_THIN = {"top": "thin", "left": "thin", "right": "thin", "bottom": "thin"}
+BORDER_LR_THIN = {"left": "thin", "right": "thin"}
+BORDER_TLR_THIN = {"top": "thin", "left": "thin", "right": "thin"}
+BORDER_LRB_THIN = {"bottom": "thin", "left": "thin", "right": "thin"}
+
 
 def cell_builder(
         worksheet: Worksheet,
@@ -70,3 +76,8 @@ def copy_sheet_from_template(workbook: Workbook, template_name: str, new_title: 
     ws = workbook.copy_worksheet(workbook.active)
     ws.title = new_title
     return ws
+
+
+def auto_width(worksheet: Worksheet, curr_cell, content: str, min_width: int = 10, padding: int = 4) -> None:
+    max_length = max(len(content), min_width)
+    worksheet.column_dimensions[curr_cell.column_letter].width = max_length + padding

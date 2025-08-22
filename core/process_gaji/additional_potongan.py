@@ -46,14 +46,15 @@ def _process_potongan_from_excel(root_batch_id: str, workbook: Workbook, gbm: pd
         query_data.extend(_process_worksheet(worksheet, gbm))
 
     _insert_gaji_batch_master_proses(query_data)
-    gbp = pd.DataFrame(fetch_gaji_batch_master_proses_by_root_batch_id(root_batch_id))
-    column_to_clean=[]
+    gbp = fetch_gaji_batch_master_proses_by_root_batch_id(root_batch_id)
+    column_to_clean = []
     gbm_ddf = dd.from_pandas(gbm, npartitions=4)
     gbm_ddf = gbm_ddf.map_partitions(lambda x: _applying_dataframe(x, gbp), meta=gbm.dtypes.to_dict())
     gbm = gbm_ddf.compute()
     # gbm = gbm.swifter.apply(lambda x: recalculate_gaji(x, gbp), axis=1)
     update_additional_gaji(gbm)
     workbook.close()
+
 
 def _applying_dataframe(partition: pd.DataFrame, gbp: pd.DataFrame):
     partition = partition.apply(lambda row: recalculate_gaji(row, gbp), axis=1)
@@ -87,6 +88,7 @@ def _process_worksheet(worksheet: Worksheet, gbm: pd.DataFrame) -> list:
     # Process data and generate INSERT query data
     return _processing_data(gbm, df)
 
+
 def _processing_data(gaji_batch_master: pd.DataFrame, dataframe: pd.DataFrame) -> list:
     """Generate INSERT query data for `gaji_batch_master_proses` table."""
     query_data = []
@@ -97,6 +99,7 @@ def _processing_data(gaji_batch_master: pd.DataFrame, dataframe: pd.DataFrame) -
             insert_data = _generate_insert_query_data(row)
             query_data.extend(insert_data)
     return query_data
+
 
 def _generate_insert_query_data(row: pd.Series) -> list:
     insert_data = []

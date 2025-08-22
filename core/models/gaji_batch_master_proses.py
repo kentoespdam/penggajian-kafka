@@ -35,7 +35,7 @@ def save_gaji_batch_master_proses(df: pd.DataFrame) -> None:
             conn.commit()
 
 
-def fetch_gaji_batch_master_proses_by_root_batch_id(root_batch_id: str):
+def fetch_gaji_batch_master_proses_by_root_batch_id(root_batch_id: str) -> pd.DataFrame:
     query = """SELECT gbp.id,
                       gbp.batch_master_id,
                       gbp.formula,
@@ -54,7 +54,7 @@ def fetch_gaji_batch_master_proses_by_root_batch_id(root_batch_id: str):
     with get_connection_pool() as conn:
         with conn.cursor() as cursor:
             cursor.execute(query, (root_batch_id,))
-            return cursor.fetchall()
+            return pd.DataFrame(cursor.fetchall())
 
 
 def rollback_additional_gaji_batch_master_proses(batch_master_id: int = None) -> None:
@@ -68,3 +68,31 @@ def rollback_additional_gaji_batch_master_proses(batch_master_id: int = None) ->
         with conn.cursor() as cursor:
             cursor.execute(query, params)
             conn.commit()
+
+
+def fetch_additional_gaji_batch_master_proses_by_periode(periode: str) -> pd.DataFrame:
+    query = """
+        SELECT
+            gbp.id,
+            gbp.batch_master_id,
+            gbp.kode,
+            gbp.nama,
+            gbp.nilai,
+            gmb.nipam 
+        FROM
+            gaji_batch_master_proses AS gbp
+            INNER JOIN gaji_batch_master AS gmb ON gbp.batch_master_id = gmb.id
+            INNER JOIN gaji_batch_root AS gbr ON gmb.batch_root_id = gbr.id 
+        WHERE
+            gbr.periode = %s 
+            AND gbr.is_deleted = %s 
+            AND gbr.`status` > %s 
+            AND gbp.kode LIKE %s
+        ORDER BY
+            gbp.id ASC
+        """
+    params = (periode, False, 1, "ADD_%")
+    with get_connection_pool() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(query, params)
+            return pd.DataFrame(cursor.fetchall())
