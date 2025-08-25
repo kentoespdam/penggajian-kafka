@@ -1,32 +1,10 @@
 from datetime import datetime
 
-from aiokafka import AIOKafkaConsumer
-
-from core.config import LOGGER, PENGGAJIAN_TOPIC, KAFKA_SERVER, KAFKA_GROUP_ID
+from core.config import LOGGER
 from core.enums import PROCESS_GAJI_STATUS
 from core.process_gaji.phase1 import process_master
 from core.process_gaji.phase2 import calculate_gaji_detail
 from core.process_gaji.phase4 import build_potongan_gaji
-
-
-async def consume_proses_gaji():
-    consumer = AIOKafkaConsumer(
-        PENGGAJIAN_TOPIC,
-        bootstrap_servers=KAFKA_SERVER,
-        group_id=KAFKA_GROUP_ID,
-        session_timeout_ms=60000,
-        heartbeat_interval_ms=3000,
-    )
-    await consumer.start()
-    try:
-        async for msg in consumer:
-            batch_root_id = msg.value.decode("utf-8")
-            LOGGER.info(f"Received message: {batch_root_id}")
-            execute(batch_root_id)
-    except Exception as e:
-        LOGGER.error(e)
-    finally:
-        await consumer.stop()
 
 
 def execute(batch_root_id: str) -> None:

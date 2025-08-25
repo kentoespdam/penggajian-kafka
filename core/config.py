@@ -11,7 +11,7 @@ LOGGER = logging.getLogger(__name__)
 
 KAFKA_SERVER = os.getenv('KAFKA_SERVER')
 KAFKA_GROUP_ID = os.getenv('KAFKA_GROUP_ID')
-PENGGAJIAN_TOPIC = os.getenv('PENGGAJIAN_TOPIC')
+KAFKA_TOPIC = os.getenv('KAFKA_TOPIC')
 HITUNG_ULANG_TOPIC = os.getenv('HITUNG_ULANG_TOPIC')
 
 KODE_CABANG_PWT1 = str(os.getenv('KODE_CABANG_PWT1'))

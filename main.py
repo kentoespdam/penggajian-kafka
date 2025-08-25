@@ -1,4 +1,3 @@
-import asyncio
 import io
 import os
 from contextlib import asynccontextmanager
@@ -10,7 +9,7 @@ from fastapi.responses import StreamingResponse, Response
 
 from core.models.gaji_batch_root import exists_gaji_batch_root_by_id
 from core.process_gaji.additional_potongan import process_excel
-from core.process_gaji.main import consume_proses_gaji
+from core.process_gaji.consumer import start_consumer
 from core.process_gaji.phase3 import build_himpunan_gaji
 
 # Extracted constants for clarity and reuse
@@ -27,18 +26,15 @@ scheduler = AsyncIOScheduler()
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     """
-    Application lifecycle manager:
-    - Starts background Kafka consumer
-    - Starts Apscheduler
-    - Ensures clean shutdown
-    """
-    loop = asyncio.get_running_loop()
-    loop.create_task(consume_proses_gaji())
-    scheduler.start()
+        Application lifespan context:
+        - Startup: initialize and start the Kafka consumer.
+        - Shutdown: gracefully close the Kafka consumer.
+        """
+    consumer = await start_consumer()
     try:
         yield
     finally:
-        scheduler.shutdown()
+        await consumer.close()
 
 
 app = FastAPI(
