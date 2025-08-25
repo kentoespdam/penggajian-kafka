@@ -6,11 +6,8 @@ from typing import AsyncIterator
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import FastAPI, HTTPException, UploadFile
-from fastapi.responses import StreamingResponse, Response, JSONResponse
+from fastapi.responses import StreamingResponse, Response
 
-from core.models.gaji_batch_master import rollback_additional_gaji_batch_master_by_batch_root_id, \
-    rollback_additional_gaji_batch_master_by_id
-from core.models.gaji_batch_master_proses import rollback_additional_gaji_batch_master_proses
 from core.models.gaji_batch_root import exists_gaji_batch_root_by_id
 from core.process_gaji.additional_potongan import process_excel
 from core.process_gaji.main import consume_proses_gaji
@@ -105,23 +102,3 @@ async def upload_additional(root_batch_id: str, file: UploadFile):
 
     await process_excel(root_batch_id, file)
     return Response("Success", status_code=200)
-
-#
-# @app.delete("/rollback/{root_batch_id}/additional_gaji", status_code=200)
-# async def rollback_additional(root_batch_id: str):
-#     if not exists_gaji_batch_root_by_id(root_batch_id):
-#         raise HTTPException(status_code=404, detail="Unknown Gaji Batch ID")
-#
-#     rollback_additional_gaji_batch_master_proses()
-#     result = rollback_additional_gaji_batch_master_by_batch_root_id(root_batch_id)
-#     return JSONResponse(result, status_code=200)
-#
-#
-# @app.delete("/rollback/{root_batch_id}/master_batch")
-# async def rollback_master(root_batch_id: str):
-#     if not exists_gaji_batch_root_by_id(root_batch_id):
-#         return Response("Unknown Gaji Batch ID", status_code=404)
-#
-#     rollback_additional_gaji_batch_master_proses(root_batch_id)
-#     result = rollback_additional_gaji_batch_master_by_id(root_batch_id)
-#     return JSONResponse(result, status_code=200)

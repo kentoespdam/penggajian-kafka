@@ -74,7 +74,7 @@ def phase4_compute_potongan_metadata(add_potongan_df: pd.DataFrame) -> tuple[pd.
     is_empty = add_potongan_df.empty
     if is_empty:
         # Preserve original behavior: when empty, return the same schema and fixed width
-        add_kode_nama_df = add_potongan_df[["kode", "nama"]]
+        add_kode_nama_df = pd.DataFrame(columns=["kode", "nama"])
         return add_kode_nama_df, 7
 
     add_kode_nama_df = add_potongan_df[["kode", "nama"]].drop_duplicates()

@@ -1,11 +1,15 @@
 import logging
 
+from core.process_gaji.main import execute
+
 logging.basicConfig(level='DEBUG',
                     format='%(asctime)s [%(levelname)8s] %(message)s (%(filename)s:%(lineno)s)',
                     encoding='utf-8')
 
 
 class TestProcessGaji:
+    def test_process_gaji(self):
+        execute("202501-001")
     def test_phase1(self):
         from core.enums import PROCESS_GAJI_STATUS
         from core.process_gaji.phase1 import process_master

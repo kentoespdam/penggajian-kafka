@@ -59,6 +59,8 @@ def _filter_pendapatan_non_pajak(gaji_pendapatan_non_pajak_df: pd.DataFrame, kod
 
 
 def _filter_jml_potongan_tkk(potongan_tkk_df: pd.DataFrame, nipam: str) -> float:
+    if potongan_tkk_df.empty:
+        return 0
     mask = potongan_tkk_df["nipam"].eq(nipam)
     filtered_df = potongan_tkk_df[mask].reset_index(drop=True)
 
