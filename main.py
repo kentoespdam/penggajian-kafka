@@ -3,7 +3,6 @@ import os
 from contextlib import asynccontextmanager
 from typing import AsyncIterator
 
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import FastAPI, HTTPException, UploadFile
 from fastapi.responses import StreamingResponse, Response
 
@@ -19,8 +18,6 @@ API_VERSION = "1.0.0"
 
 MSG_UNKNOWN_BATCH = "Unknown Gaji Batch ID"
 MSG_SUCCESS = "Success"
-
-scheduler = AsyncIOScheduler()
 
 
 @asynccontextmanager
