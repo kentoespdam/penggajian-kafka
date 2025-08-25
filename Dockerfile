@@ -34,7 +34,10 @@ RUN addgroup -S -g ${GID} prod && \
 
 # Copy venv and application files with correct ownership
 COPY --from=builder --chown=prod:prod ${APP_HOME}/.venv ${APP_HOME}/.venv
-COPY --chown=prod:prod core excel_template main.py .env ${APP_HOME}/
+COPY --chown=prod:prod core .
+COPY --chown=prod:prod excel_template .
+COPY --chown=prod:prod main.py .
+COPY --chown=prod:prod .env .
 
 # Switch to non-root user before creating writable directories
 USER prod
