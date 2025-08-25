@@ -22,7 +22,7 @@ RUN python3 -m venv .venv
 ENV PATH=${APP_HOME}/.venv/bin:$PATH
 COPY requirements-old.txt .
 RUN pip install --upgrade pip && \
-    pip install -r requirements-old.txt
+    pip install -r requirements.txt
 
 # Final runtime image
 FROM base AS final
