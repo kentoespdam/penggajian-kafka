@@ -20,9 +20,9 @@ RUN apk add --no-cache \
     g++ libc-dev make cmake openssl-dev zlib-dev librdkafka-dev
 RUN python3 -m venv .venv
 ENV PATH=${APP_HOME}/.venv/bin:$PATH
-COPY requirements.txt .
+COPY requirements-old.txt .
 RUN pip install --upgrade pip && \
-    pip install -r requirements.txt
+    pip install -r requirements-old.txt
 
 # Final runtime image
 FROM base AS final
