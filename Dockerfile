@@ -20,8 +20,8 @@ RUN pip install --no-cache-dir --upgrade pip
 RUN pip install -r requirements.txt
 
 FROM base AS runner
-WORKDIR /app
 USER 1001:1001
+WORKDIR /app
 # RUN git clone https://github.com/kentoespdam/penggajian-kafka.git -b v1.0.0 .
 COPY --from=builder --chown=1001:1001 /app/.venv /app/.venv
 COPY core ./core
