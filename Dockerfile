@@ -42,7 +42,7 @@ RUN adduser -D -u 1000 appuser && \
 # Copy venv and application files with correct ownership
 COPY --from=builder --chown=appuser:appuser ${APP_HOME}/.venv ${APP_HOME}/.venv
 COPY --chown=appuser:appuser . .
-RUN chown -R appuser:appuser ${APP_HOME}
+#RUN chown -R appuser:appuser ${APP_HOME}
 # Switch to non-root user before creating writable directories
 USER appuser
 RUN mkdir ${APP_HOME}/result_excel

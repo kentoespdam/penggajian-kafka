@@ -4,6 +4,7 @@ __pycache__
 *.pyo
 *.pyd
 .Python
+.env
 env/
 venv/
 .venv/
@@ -30,4 +31,4 @@ Dockerfile
 .idea
 copy.sh
 tests/
-result_excel/
+result_excel
