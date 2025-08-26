@@ -1,6 +1,7 @@
+import pandas as pd
+
 from core.config import get_connection_pool, LOGGER
 from core.enums import STATUS_KERJA
-import pandas as pd
 
 
 def delete_gaji_batch_master_by_batch_root_id(batch_root_id: str) -> None:

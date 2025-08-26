@@ -2,8 +2,6 @@ import json
 
 from core.config import get_connection_pool
 from core.enums import EProsesGaji
-import pandas as pd
-from icecream import ic
 
 
 def fetch_gaji_batch_root_by_id(batch_root_id):

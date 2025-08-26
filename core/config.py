@@ -1,8 +1,9 @@
 import logging
 import os
+
 from dotenv import load_dotenv
-from pymysqlpool import Connection, ConnectionPool
 from pymysql.cursors import DictCursor
+from pymysqlpool import Connection, ConnectionPool
 
 load_dotenv()
 logging.basicConfig(level=os.getenv('LOG_LEVEL', 'INFO'),

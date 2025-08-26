@@ -5,8 +5,6 @@ from datetime import datetime, timedelta
 
 import pandas as pd
 
-from core.config import LOGGER
-
 
 def cleanup_is_boolean(x):
     x.encode("utf-8")
