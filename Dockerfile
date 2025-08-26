@@ -21,7 +21,7 @@ RUN apk add --no-cache \
 RUN python3 -m venv .venv
 ENV PATH=${APP_HOME}/.venv/bin:$PATH
 
-COPY requirements-prod.txt requirements.txt
+COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
