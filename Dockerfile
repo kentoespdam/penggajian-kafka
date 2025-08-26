@@ -26,6 +26,7 @@ ARG APP_HOME=/app
 WORKDIR ${APP_HOME}
 RUN apk add --no-cache g++ libc-dev make cmake openssl-dev zlib-dev librdkafka-dev
 RUN mkdir -p ${APP_HOME}/result_excel
+RUN touch ${APP_HOME}/result_excel/.keep
 RUN python3 -m venv .venv
 ENV PATH=${APP_HOME}/.venv/bin:$PATH
 COPY requirements.txt .
