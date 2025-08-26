@@ -25,6 +25,7 @@ FROM base AS builder
 ARG APP_HOME=/app
 WORKDIR ${APP_HOME}
 RUN apk add --no-cache g++ libc-dev make cmake openssl-dev zlib-dev librdkafka-dev
+RUN mkdir -p ${APP_HOME}/result_excel
 RUN python3 -m venv .venv
 ENV PATH=${APP_HOME}/.venv/bin:$PATH
 COPY requirements.txt .
@@ -40,6 +41,7 @@ RUN adduser -D -u 1000 appuser && \
     chown -R appuser:appuser /app
 # Copy venv and application files with correct ownership
 COPY --from=builder --chown=appuser:appuser ${APP_HOME}/.venv ${APP_HOME}/.venv
+COPY --from=builder --chown=appuser:appuser ${APP_HOME}/result_excel ${APP_HOME}/result_excel
 COPY --chown=appuser:appuser . .
 # Switch to non-root user before creating writable directories
 USER appuser
