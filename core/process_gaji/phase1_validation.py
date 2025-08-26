@@ -17,12 +17,7 @@ def validate_status_gaji_batch_root(gbr) -> PROCESS_GAJI_STATUS | None:
     :param gbr: pd.DataFrame of gaji batch root
     :return: PROCESS_GAJI_STATUS
     """
-
-    batch_root_id = gbr["id"]
     if gbr is None:
-        update_status_gaji_batch_root(
-            batch_root_id, status_process=EProsesGaji.FAILED.value
-        )
         LOGGER.error("gaji batch root not found")
         return PROCESS_GAJI_STATUS.FAILED
 

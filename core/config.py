@@ -7,6 +7,7 @@ from pymysql.cursors import DictCursor
 load_dotenv()
 logging.basicConfig(level=os.getenv('LOG_LEVEL', 'INFO'),
                     format='%(asctime)s [%(levelname)8s] %(message)s (%(filename)s:%(lineno)s)', encoding='utf-8')
+logging.getLogger("aiokafka").setLevel("ERROR")
 LOGGER = logging.getLogger(__name__)
 
 KAFKA_SERVER = os.getenv('KAFKA_SERVER')

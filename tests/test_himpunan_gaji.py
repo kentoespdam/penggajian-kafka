@@ -23,4 +23,4 @@ raw_types = {
 
 class TestHimpunanGaji:
     def test_generate_excel(self):
-        build_himpunan_gaji("202501-001")
+        build_himpunan_gaji("202501-002")

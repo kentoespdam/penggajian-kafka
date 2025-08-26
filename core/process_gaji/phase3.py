@@ -161,11 +161,9 @@ def _clean_pegawai_df(df: pd.DataFrame) -> pd.DataFrame:
     - Normalize is_different to boolean-like value
     """
     ddf = dd.from_pandas(df, npartitions=2)
-    ddf["golongan"] = ddf["golongan"].map(cleanup_empty_string)
-    ddf["pangkat"] = ddf["pangkat"].map(cleanup_empty_string)
-    ddf["is_different"] = ddf["is_different"].map(
-        cleanup_is_boolean, meta=("is_different", "bool")
-    )
+    ddf["golongan"] = ddf["golongan"].map(cleanup_empty_string, meta=("golongan", "str"))
+    ddf["pangkat"] = ddf["pangkat"].map(cleanup_empty_string, meta=("pangkat", "str"))
+    ddf["is_different"] = ddf["is_different"].map(cleanup_is_boolean, meta=("is_different", "bool"))
     return ddf.compute()
 
 
