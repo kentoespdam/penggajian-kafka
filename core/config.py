@@ -11,10 +11,10 @@ logging.basicConfig(level=os.getenv('LOG_LEVEL', 'INFO'),
 logging.getLogger("aiokafka").setLevel("ERROR")
 LOGGER = logging.getLogger(__name__)
 
-KAFKA_SERVER = os.getenv('KAFKA_SERVER')
-KAFKA_GROUP_ID = os.getenv('KAFKA_GROUP_ID')
-KAFKA_TOPIC = os.getenv('KAFKA_TOPIC')
-HITUNG_ULANG_TOPIC = os.getenv('HITUNG_ULANG_TOPIC')
+KAFKA_SERVER = str(os.getenv('KAFKA_SERVER'))
+KAFKA_GROUP_ID = str(os.getenv('KAFKA_GROUP_ID'))
+KAFKA_TOPIC = str(os.getenv('KAFKA_TOPIC'))
+HITUNG_ULANG_TOPIC = str(os.getenv('HITUNG_ULANG_TOPIC'))
 
 KODE_CABANG_PWT1 = str(os.getenv('KODE_CABANG_PWT1'))
 KODE_CABANG_PWT2 = str(os.getenv('KODE_CABANG_PWT2'))

@@ -8,7 +8,8 @@ async def consume_proses_gaji():
     consumer = AIOKafkaConsumer(
         KAFKA_TOPIC, group_id=KAFKA_GROUP_ID, bootstrap_servers=KAFKA_SERVER,
         session_timeout_ms=60000,
-        heartbeat_interval_ms=20000
+        heartbeat_interval_ms=20000,
+        auto_offset_reset="latest"
     )
     await consumer.start()
     try:
