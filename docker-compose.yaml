@@ -4,6 +4,7 @@ volumes:
 services:
   penggajian_kafka:
     container_name: Penggajian-Kafka
+    user: "appuser:appuser"
     build: .
     ports:
       - "81:80"

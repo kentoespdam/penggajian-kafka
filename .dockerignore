@@ -1,4 +1,5 @@
 __pycache__
+*/__pycache__
 *.pyc
 *.pyo
 *.pyd
@@ -20,7 +21,13 @@ test/
 Thumbs.db
 .git
 .gitignore
+.dockerignore
 README.md
 docker-compose.yml
+docker-compose.yaml
 Dockerfile
 .vscode/
+.idea
+copy.sh
+tests/
+result_excel/
