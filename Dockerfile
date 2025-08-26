@@ -3,7 +3,6 @@ FROM python:3.12.10-alpine3.21 AS base
 # Extracted constants
 ARG APP_HOME=/app
 WORKDIR ${APP_HOME}
-
 # System packages needed at runtime and for building in derived stages
 RUN apk update && apk add --no-cache \
     gcc \
@@ -36,23 +35,15 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 # Final runtime image
 FROM base AS final
 WORKDIR ${APP_HOME}
-
-# Create non-root user/group once with extracted IDs
-#RUN #addgroup -S -g ${GID} prod && adduser  -S -u ${UID} -G prod -h ${APP_HOME} prod
 # Create non-root user
 RUN adduser -D -u 1000 appuser && \
     chown -R appuser:appuser /app
-
 # Copy venv and application files with correct ownership
 COPY --from=builder --chown=appuser:appuser ${APP_HOME}/.venv ${APP_HOME}/.venv
 COPY --chown=appuser:appuser . .
-
-USER appuser
-
+RUN mkdir -p --chown=appuser:appuser ${APP_HOME}/result_excel
 # Switch to non-root user before creating writable directories
-#USER prod
-RUN mkdir -p ${APP_HOME}/result_excel
-
+USER appuser
 # Ensure venv is first on PATH
 ENV PATH=${APP_HOME}/.venv/bin:$PATH
 
