@@ -21,8 +21,10 @@ RUN apk add --no-cache \
     rm -rf /var/cache/apk/*
 
 ENV TZ=Asia/Jakarta
-RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-RUN apk del tzdata
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime &&  \
+    cp /usr/share/zoneinfo/$TZ /etc/localtime && \
+    echo $TZ > /etc/timezone && \
+    apk del tzdata
 
 RUN python3 -m venv .venv
 ENV PATH=${APP_HOME}/.venv/bin:$PATH
