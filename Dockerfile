@@ -16,7 +16,13 @@ RUN apk add --no-cache \
     lapack-dev \
     gfortran \
     linux-headers \
-    librdkafka-dev
+    librdkafka-dev \
+    tzdata &&  \
+    rm -rf /var/cache/apk/*
+
+ENV TZ=Asia/Jakarta
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+RUN apk del tzdata
 
 RUN python3 -m venv .venv
 ENV PATH=${APP_HOME}/.venv/bin:$PATH
@@ -35,18 +41,23 @@ RUN apk add --no-cache \
     libstdc++ \
     openblas \
     librdkafka \
-    curl
+    curl &&  \
+    rm -rf /var/cache/apk/*
 
 # Create non-root user
 RUN adduser -D -u 1000 appuser && chown -R appuser:appuser ${APP_HOME}
 
+COPY --chown=appuser:appuser . .
+# Copy timezone configuration from builder
+COPY --from=builder /etc/localtime /etc/localtime
+COPY --from=builder /etc/timezone /etc/timezone
 # Copy venv and application files with correct ownership
 COPY --from=builder --chown=appuser:appuser ${APP_HOME}/.venv ${APP_HOME}/.venv
-COPY --chown=appuser:appuser . .
 
 USER appuser
 RUN mkdir -p ${APP_HOME}/result_excel
 
+ENV TZ=Asia/Jakarta
 ENV PATH=${APP_HOME}/.venv/bin:$PATH
 
 EXPOSE 80
