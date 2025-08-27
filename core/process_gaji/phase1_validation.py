@@ -21,7 +21,11 @@ def validate_status_gaji_batch_root(gbr) -> ProcessGajiStatus | None:
         LOGGER.error("gaji batch root not found")
         return ProcessGajiStatus.FAILED
 
-    if gbr["status"] == EProsesGaji.PROSES.value:
+    elif gbr["status"] == EProsesGaji.FINISHED.value:
+        LOGGER.error("gaji batch root already finished")
+        return ProcessGajiStatus.FAILED
+
+    elif gbr["status"] == EProsesGaji.PROSES.value:
         LOGGER.error("gaji batch root already processed")
         return ProcessGajiStatus.DUPLICATE
 

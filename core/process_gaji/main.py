@@ -24,9 +24,6 @@ async def execute(batch_root_id: str) -> None:
         LOGGER.error(f"calculate gaji detail status: {phase2_status.value}")
         return
 
-    end_time = datetime.now()
-    LOGGER.info(f"process gaji finished in {end_time - start_time}")
-
     LOGGER.info("\n=========================================================\n")
     # phase 3
     build_himpunan_gaji(batch_root_id)
@@ -34,3 +31,6 @@ async def execute(batch_root_id: str) -> None:
     LOGGER.info("\n=========================================================\n")
     # phase 4
     build_potongan_gaji(batch_root_id)
+
+    end_time = datetime.now()
+    LOGGER.info(f"process gaji finished in {end_time - start_time}")
