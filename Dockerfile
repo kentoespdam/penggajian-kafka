@@ -47,6 +47,8 @@ COPY --chown=appuser:appuser . .
 USER appuser
 RUN mkdir -p ${APP_HOME}/result_excel
 
+ENV PATH=${APP_HOME}/.venv/bin:$PATH
+
 EXPOSE 80
 
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
