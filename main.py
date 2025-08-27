@@ -3,13 +3,14 @@ import io
 import os
 from contextlib import asynccontextmanager
 
+from aiokafka import AIOKafkaConsumer
 from fastapi import HTTPException, UploadFile, FastAPI
 from fastapi.responses import StreamingResponse, Response
 
-from core.config import LOGGER
+from core.config import KAFKA_TOPIC, KAFKA_SERVER, KAFKA_GROUP_ID, LOGGER
 from core.models.gaji_batch_root import exists_gaji_batch_root_by_id
 from core.process_gaji.additional_potongan import process_excel
-from core.process_gaji.consumer import start_consumer_in_background
+from core.process_gaji.consumer import consume_proses_gaji
 from core.process_gaji.phase3 import build_himpunan_gaji
 
 # Extracted constants for clarity and reuse
@@ -22,23 +23,24 @@ MSG_SUCCESS = "Success"
 
 
 @asynccontextmanager
-async def lifespan(_app: FastAPI):
-    # Startup: start Kafka consumer
-    consumer_task = start_consumer_in_background()
-    _app.state.consumer_task = consumer_task
-    LOGGER.info("Kafka consumer started in background")
-
-    try:
-        yield
-    finally:
-        task = getattr(_app.state, "consumer_task", None)
-        if task and not task.done():
-            task.cancel()
-            try:
-                await task
-            except asyncio.CancelledError:
-                LOGGER.info("Kafka consumer cancelled")
-        _app.state.consumer_task = None
+async def lifespan(app: FastAPI):
+    consumer = AIOKafkaConsumer(
+        KAFKA_TOPIC,
+        bootstrap_servers=KAFKA_SERVER,
+        group_id=KAFKA_GROUP_ID,
+        enable_auto_commit=False,
+        value_deserializer=lambda x: x.decode("utf-8"),
+        max_poll_records=10,
+        session_timeout_ms=60000,
+        heartbeat_interval_ms=20000
+    )
+    await consumer.start()
+    task = asyncio.create_task(consume_proses_gaji(consumer))
+    LOGGER.info("Kafka consumer started, waiting for messages...")
+    yield
+    task.cancel()
+    await consumer.stop()
+    LOGGER.info("Kafka consumer stopped")
 
 
 app = FastAPI(
