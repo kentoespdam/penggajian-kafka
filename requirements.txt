@@ -7,7 +7,6 @@ click==8.2.1
 cloudpickle==3.1.1
 colorama==0.4.6
 dask==2025.7.0
-deptry==0.23.1
 dnspython==2.7.0
 email-validator==2.3.0
 et_xmlfile==2.0.0
@@ -32,7 +31,7 @@ pandas==2.3.2
 partd==1.4.2
 pyarrow==21.0.0
 pydantic==2.11.7
-pydantic_core==2.39.0
+pydantic_core==2.33.2
 Pygments==2.19.2
 PyMySQL==1.1.2
 pymysql-pool==0.5.0
@@ -41,7 +40,6 @@ python-dotenv==1.1.1
 python-multipart==0.0.20
 pytz==2025.2
 PyYAML==6.0.2
-requirements-parser==0.13.0
 rich==14.1.0
 rich-toolkit==0.15.0
 rignore==0.6.4
