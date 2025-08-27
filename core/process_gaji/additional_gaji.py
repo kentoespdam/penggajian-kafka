@@ -3,7 +3,7 @@ from math import ceil
 import pandas as pd
 
 from core.config import get_connection_pool
-from core.enums import JENIS_GAJI
+from core.enums import JenisGaji
 
 # Column name constants
 COL_BATCH_MASTER_ID = "batch_master_id"
@@ -65,12 +65,12 @@ def recalculate_gaji(master_batch_df: pd.Series, gaji_batch_proses_df: pd.DataFr
     gaji_batch_proses_for_batch_df = gaji_batch_proses_df[mask].reset_index(drop=True)
 
     # Additional components (ADD_) by type
-    add_tambahan = _sum_by_filters(gaji_batch_proses_for_batch_df, jenis=JENIS_GAJI.PEMASUKAN.value, kode_prefix="ADD_")
-    add_potongan = _sum_by_filters(gaji_batch_proses_for_batch_df, jenis=JENIS_GAJI.POTONGAN.value, kode_prefix="ADD_")
+    add_tambahan = _sum_by_filters(gaji_batch_proses_for_batch_df, jenis=JenisGaji.PEMASUKAN.value, kode_prefix="ADD_")
+    add_potongan = _sum_by_filters(gaji_batch_proses_for_batch_df, jenis=JenisGaji.POTONGAN.value, kode_prefix="ADD_")
 
     # Totals by type
-    total_pemasukan = _sum_by_filters(gaji_batch_proses_for_batch_df, jenis=JENIS_GAJI.PEMASUKAN.value)
-    total_potongan = _sum_by_filters(gaji_batch_proses_for_batch_df, jenis=JENIS_GAJI.POTONGAN.value)
+    total_pemasukan = _sum_by_filters(gaji_batch_proses_for_batch_df, jenis=JenisGaji.PEMASUKAN.value)
+    total_potongan = _sum_by_filters(gaji_batch_proses_for_batch_df, jenis=JenisGaji.POTONGAN.value)
 
     # Net income and rounding
     penghasilan_bersih = _compute_net_income(total_pemasukan, total_potongan)

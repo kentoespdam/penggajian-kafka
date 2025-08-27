@@ -2,7 +2,7 @@ import pandas as pd
 from dask.array import isnan
 
 from core.config import LOGGER
-from core.enums import PROCESS_GAJI_STATUS, STATUS_PEGAWAI, EProsesGaji, STATUS_KAWIN
+from core.enums import ProcessGajiStatus, StatusPegawai, EProsesGaji, StatusKawin
 from core.models.gaji_batch_master import (
     delete_gaji_batch_master_by_batch_root_id,
     fetch_raw_gaji_master_batch, save_gaji_batch_master,
@@ -17,7 +17,7 @@ from core.models.gaji_batch_root_error_logs import (
 from core.process_gaji.phase1_validation import validate_status_gaji_batch_root, validate_gaji_master
 
 
-def process_master(batch_root_id: str) -> PROCESS_GAJI_STATUS:
+def process_master(batch_root_id: str) -> ProcessGajiStatus:
     LOGGER.info(f"Starting phase1: processing gaji master for batch ID {batch_root_id}")
     batch_root_data = fetch_gaji_batch_root_by_id(batch_root_id)
 
@@ -38,14 +38,14 @@ def process_master(batch_root_id: str) -> PROCESS_GAJI_STATUS:
         update_status_gaji_batch_root(
             batch_root_id, status_process=EProsesGaji.FAILED.value
         )
-        return PROCESS_GAJI_STATUS.FAILED
+        return ProcessGajiStatus.FAILED
 
     raw_gaji_master_data = cleanup_raw_gaji_master_data(
         raw_gaji_master_data, batch_root_id
     )
 
-    if validate_gaji_master(raw_gaji_master_data) == PROCESS_GAJI_STATUS.FAILED:
-        return PROCESS_GAJI_STATUS.FAILED
+    if validate_gaji_master(raw_gaji_master_data) == ProcessGajiStatus.FAILED:
+        return ProcessGajiStatus.FAILED
 
     try:
         save_gaji_batch_master(raw_gaji_master_data)
@@ -54,10 +54,10 @@ def process_master(batch_root_id: str) -> PROCESS_GAJI_STATUS:
         update_status_gaji_batch_root(
             batch_root_id, status_process=EProsesGaji.FAILED.value
         )
-        return PROCESS_GAJI_STATUS.FAILED
+        return ProcessGajiStatus.FAILED
 
     LOGGER.info("Gaji master processing completed successfully")
-    return PROCESS_GAJI_STATUS.SUCCESS
+    return ProcessGajiStatus.SUCCESS
 
 
 def cleanup_log_and_batch_data(batch_root_id: str) -> None:
@@ -101,11 +101,11 @@ def _cleanup_golongan_id(data: pd.Series):
     return (
         1
         if data["status_pegawai"]
-           in {STATUS_PEGAWAI.CALON_HONORER.value, STATUS_PEGAWAI.HONORER.value}
+           in {StatusPegawai.CALON_HONORER.value, StatusPegawai.HONORER.value}
         else data["golongan_id"]
     )
 
 
 def _hitung_jumlah_jiwa(row) -> int:
-    is_kawin = 1 if row["status_kawin"] == STATUS_KAWIN.KAWIN.value else 0
+    is_kawin = 1 if row["status_kawin"] == StatusKawin.KAWIN.value else 0
     return 1 + row["jml_tanggungan"] + is_kawin

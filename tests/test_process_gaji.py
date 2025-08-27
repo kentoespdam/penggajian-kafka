@@ -11,17 +11,17 @@ class TestProcessGaji:
     def test_process_gaji(self):
         execute("202501-001")
     def test_phase1(self):
-        from core.enums import PROCESS_GAJI_STATUS
+        from core.enums import ProcessGajiStatus
         from core.process_gaji.phase1 import process_master
         from core.config import LOGGER
         result = process_master("202501-001")
         LOGGER.debug(result)
-        assert result == PROCESS_GAJI_STATUS.SUCCESS
+        assert result == ProcessGajiStatus.SUCCESS
 
     def test_phase2(self):
-        from core.enums import PROCESS_GAJI_STATUS
+        from core.enums import ProcessGajiStatus
         from core.process_gaji.phase2 import calculate_gaji_detail
         from core.config import LOGGER
         result = calculate_gaji_detail("202501-001")
         LOGGER.debug(result)
-        assert result == PROCESS_GAJI_STATUS.SUCCESS
+        assert result == ProcessGajiStatus.SUCCESS

@@ -1,6 +1,6 @@
 import pandas as pd
 
-from core.enums import STATUS_PEGAWAI
+from core.enums import StatusPegawai
 from core.process_gaji.phase3_helper import DIREKSI_LEVEL_IDS
 
 # Domain constants
@@ -33,7 +33,7 @@ def filter_gaji_pegawai(organisasi_df: pd.DataFrame, gaji_pegawai_df: pd.DataFra
     """
     kode_prefixes = tuple(organisasi_df["kode"].tolist())
     mask_organisasi = gaji_pegawai_df["kode_organisasi"].str.startswith(kode_prefixes)
-    mask_pegawai = gaji_pegawai_df["status_pegawai"].ne(STATUS_PEGAWAI.KONTRAK.value)
+    mask_pegawai = gaji_pegawai_df["status_pegawai"].ne(StatusPegawai.KONTRAK.value)
     mask = mask_organisasi & mask_pegawai
     return gaji_pegawai_df.loc[mask].reset_index(drop=True)
 
@@ -48,9 +48,9 @@ def filter_komponen_by_batch_ids(komponen_gaji_df: pd.DataFrame, batch_ids: pd.S
 
 def filter_gaji_kontrak(gaji_pegawai_df: pd.DataFrame) -> pd.DataFrame:
     """
-    Select only contract employees based on STATUS_PEGAWAI.KONTRAK.
+    Select only contract employees based on StatusPegawai.KONTRAK.
     """
-    is_kontrak = gaji_pegawai_df["status_pegawai"].eq(STATUS_PEGAWAI.KONTRAK.value)
+    is_kontrak = gaji_pegawai_df["status_pegawai"].eq(StatusPegawai.KONTRAK.value)
     return gaji_pegawai_df.loc[is_kontrak].reset_index(drop=True)
 
 

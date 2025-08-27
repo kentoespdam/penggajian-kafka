@@ -4,7 +4,7 @@ import pandas as pd
 from openpyxl.styles import Font
 from openpyxl.worksheet.worksheet import Worksheet
 
-from core.enums import STATUS_PEGAWAI
+from core.enums import StatusPegawai
 from core.excel_helper import cell_builder
 from core.helpers import get_nama_bulan
 
@@ -105,7 +105,7 @@ def filter_kontrak_pegawai(df: pd.DataFrame) -> pd.DataFrame:
     """
     Filter contract employees based on the status_pegawai column.
     """
-    is_kontrak = df["status_pegawai"].eq(STATUS_PEGAWAI.KONTRAK.value)
+    is_kontrak = df["status_pegawai"].eq(StatusPegawai.KONTRAK.value)
     return df.loc[is_kontrak].reset_index(drop=True)
 
 

@@ -1,7 +1,7 @@
 import pandas as pd
 
 from core.config import LOGGER
-from core.enums import STATUS_KAWIN, TUNJANGAN
+from core.enums import StatusKawin, Tunjangan
 from core.helpers import safe_eval
 from core.process_gaji.phase2_helper import replace_formula_with_values, _filter_tunjangan, _filter_rumah_dinas, \
     _filter_potongan_tkk, _filter_pendapatan_non_pajak, _filter_jml_potongan_tkk, filter_komponen_by_kode
@@ -48,7 +48,7 @@ def _setup_nilai_referensi_komponen_gaji(
             # Tunjangan Jabatan
             result = _filter_tunjangan(
                 tunjangan_df,
-                TUNJANGAN.JABATAN.value,
+                Tunjangan.JABATAN.value,
                 level_id,  # noqa
                 golongan_id,  # noqa
             )
@@ -58,7 +58,7 @@ def _setup_nilai_referensi_komponen_gaji(
             # Tunjangan Beras
             return _filter_tunjangan(
                 tunjangan_df,
-                TUNJANGAN.BERAS.value,
+                Tunjangan.BERAS.value,
                 7,  # noqa
                 golongan_id,  # noqa
             )
@@ -66,7 +66,7 @@ def _setup_nilai_referensi_komponen_gaji(
             # Tunjangan Kinerja
             result = _filter_tunjangan(
                 tunjangan_df,
-                TUNJANGAN.KINERJA.value,
+                Tunjangan.KINERJA.value,
                 level_id,  # noqa
                 golongan_id,  # noqa
             )
@@ -76,7 +76,7 @@ def _setup_nilai_referensi_komponen_gaji(
             # Tunjangan Air
             result = _filter_tunjangan(
                 tunjangan_df,
-                TUNJANGAN.AIR.value,
+                Tunjangan.AIR.value,
                 level_id,  # noqa
                 golongan_id,  # noqa
             )
@@ -193,9 +193,9 @@ def _calculate_nilai_formula(
                           komponen_gaji_df.iterrows()}
         nilai_komponen["JML_ANAK"] = master_row["jml_tanggungan"]
         nilai_komponen["JML_JIWA"] = 1 + master_row["jml_tanggungan"] + (
-            0 if master_row["status_kawin"] != STATUS_KAWIN.KAWIN.value else 1)
+            0 if master_row["status_kawin"] != StatusKawin.KAWIN.value else 1)
 
-        if row["kode"] == "TUNJ_SI" and master_row["status_kawin"] != STATUS_KAWIN.KAWIN.value:
+        if row["kode"] == "TUNJ_SI" and master_row["status_kawin"] != StatusKawin.KAWIN.value:
             nilai_komponen["GP"] = 0
 
         formula = row["nilai_formula"].strip()

@@ -1,5 +1,3 @@
-from icecream import ic
-
 from core.helpers import get_previous_period
 from core.models.gaji_batch_master import fetch_daftar_potongan_gaji_by_batch_root_id
 from core.models.gaji_batch_master_proses import fetch_additional_gaji_batch_master_proses_by_periode

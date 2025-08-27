@@ -1,7 +1,7 @@
 import pandas as pd
 
 from core.config import get_connection_pool, LOGGER
-from core.enums import STATUS_KERJA
+from core.enums import StatusKerja
 
 
 def delete_gaji_batch_master_by_batch_root_id(batch_root_id: str) -> None:
@@ -47,7 +47,7 @@ def fetch_raw_gaji_master_batch():
 
     with get_connection_pool() as conn:
         with conn.cursor() as cursor:
-            cursor.execute(sql, (STATUS_KERJA.KARYAWAN_AKTIF.value,))
+            cursor.execute(sql, (StatusKerja.KARYAWAN_AKTIF.value,))
             return pd.DataFrame(cursor.fetchall())
 
 

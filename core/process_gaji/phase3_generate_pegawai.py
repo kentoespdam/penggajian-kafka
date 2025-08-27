@@ -4,7 +4,7 @@ import pandas as pd
 from openpyxl import Workbook
 
 from core.config import LOGGER
-from core.enums import STATUS_PEGAWAI
+from core.enums import StatusPegawai
 from core.helpers import get_nama_bulan
 from core.process_gaji.phase3_generate_sheet_pegawai import generate_sheet_per_organisasi
 
@@ -31,7 +31,7 @@ def generate_pegawai_sheet(
         current_sheet["A8"] = f"{organisasi['nama']}"
 
         mask_pegawai = (daftar_gaji_pegawai_df["kode_organisasi"].str.startswith(f"{organisasi['kode']}")) & (
-                daftar_gaji_pegawai_df["status_pegawai"] != STATUS_PEGAWAI.KONTRAK.value)
+                daftar_gaji_pegawai_df["status_pegawai"] != StatusPegawai.KONTRAK.value)
         pegawai_df = daftar_gaji_pegawai_df[mask_pegawai].reset_index(drop=True)
         pegawai_df.sort_values(by=["level_id", "golongan"], ascending=[True, False], inplace=True)
 

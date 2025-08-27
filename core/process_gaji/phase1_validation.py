@@ -3,32 +3,32 @@ import json
 import pandas as pd
 
 from core.config import LOGGER
-from core.enums import PROCESS_GAJI_STATUS, EProsesGaji, STATUS_PEGAWAI
+from core.enums import ProcessGajiStatus, EProsesGaji, StatusPegawai
 from core.models.gaji_batch_root import (
     update_status_gaji_batch_root,
 )
 from core.models.gaji_batch_root_error_logs import save_batch_root_error_logs
 
 
-def validate_status_gaji_batch_root(gbr) -> PROCESS_GAJI_STATUS | None:
+def validate_status_gaji_batch_root(gbr) -> ProcessGajiStatus | None:
     """
-    Validate status gaji batch root, if the status is PROSES (1) then return PROCESS_GAJI_STATUS.DUPLICATE
-    If the gbr is None then return PROCESS_GAJI_STATUS.FAILED
+    Validate status gaji batch root, if the status is PROSES (1) then return ProcessGajiStatus.DUPLICATE
+    If the gbr is None then return ProcessGajiStatus.FAILED
     :param gbr: pd.DataFrame of gaji batch root
-    :return: PROCESS_GAJI_STATUS
+    :return: ProcessGajiStatus
     """
     if gbr is None:
         LOGGER.error("gaji batch root not found")
-        return PROCESS_GAJI_STATUS.FAILED
+        return ProcessGajiStatus.FAILED
 
     if gbr["status"] == EProsesGaji.PROSES.value:
         LOGGER.error("gaji batch root already processed")
-        return PROCESS_GAJI_STATUS.DUPLICATE
+        return ProcessGajiStatus.DUPLICATE
 
     return None
 
 
-def validate_gaji_master(gaji_master_df: pd.DataFrame) -> PROCESS_GAJI_STATUS:
+def validate_gaji_master(gaji_master_df: pd.DataFrame) -> ProcessGajiStatus:
     """
     Validate gaji master data.
     """
@@ -42,7 +42,7 @@ def validate_gaji_master(gaji_master_df: pd.DataFrame) -> PROCESS_GAJI_STATUS:
             continue
 
         if row["golongan_id"] == 0 and row["level_id"] not in {2, 3, 4} and row["status_pegawai"] in {
-            STATUS_PEGAWAI.PEGAWAI.value, STATUS_PEGAWAI.CAPEG.value}:
+            StatusPegawai.PEGAWAI.value, StatusPegawai.CAPEG.value}:
             _append_error(row, errors, "Missing golongan id")
             summary["error"] += 1
             continue
@@ -60,9 +60,9 @@ def validate_gaji_master(gaji_master_df: pd.DataFrame) -> PROCESS_GAJI_STATUS:
             notes=json.dumps(summary)
         )
         save_batch_root_error_logs(errors)
-        return PROCESS_GAJI_STATUS.FAILED
+        return ProcessGajiStatus.FAILED
 
-    return PROCESS_GAJI_STATUS.SUCCESS
+    return ProcessGajiStatus.SUCCESS
 
 
 def _append_error(data: pd.Series, errors: list, notes: str):

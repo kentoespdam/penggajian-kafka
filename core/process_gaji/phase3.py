@@ -6,7 +6,7 @@ import pandas as pd
 from openpyxl import load_workbook
 
 from core.config import LOGGER
-from core.enums import STATUS_PEGAWAI
+from core.enums import StatusPegawai
 from core.helpers import cleanup_is_boolean, cleanup_empty_string
 from core.models.gaji_batch_master import fetch_daftar_gaji_pegawai
 from core.models.organisasi import fetch_organisasi_by_level
@@ -127,7 +127,7 @@ def _generate_excel(
     dirum_df = daftar_gaji_pegawai_df.loc[is_dirum].reset_index(drop=True)
 
     # Pegawai Kontrak
-    is_kontrak = daftar_gaji_pegawai_df["status_pegawai"].eq(STATUS_PEGAWAI.KONTRAK.value)
+    is_kontrak = daftar_gaji_pegawai_df["status_pegawai"].eq(StatusPegawai.KONTRAK.value)
     daftar_gaji_pegawai_kontrak_df = daftar_gaji_pegawai_df.loc[is_kontrak].reset_index(drop=True)
 
     # Generate sheets

@@ -30,7 +30,7 @@ def get_connection_pool(autocommit: bool = False) -> Connection:
         "pre_create_num": 2,
         "name": "kepegawaian-pool",
         'host': os.getenv('DB_HOST'),
-        'port': int(os.getenv('DB_PORT')),
+        'port': int(os.getenv('DB_PORT') or 3306),
         'user': os.getenv('DB_USER'),
         'password': os.getenv('DB_PASS'),
         'database': os.getenv('DB_NAME'),

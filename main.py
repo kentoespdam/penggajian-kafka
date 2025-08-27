@@ -3,13 +3,13 @@ import io
 import os
 from contextlib import asynccontextmanager
 
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from fastapi import FastAPI, HTTPException, UploadFile
+from fastapi import HTTPException, UploadFile, FastAPI
 from fastapi.responses import StreamingResponse, Response
 
+from core.config import LOGGER
 from core.models.gaji_batch_root import exists_gaji_batch_root_by_id
 from core.process_gaji.additional_potongan import process_excel
-from core.process_gaji.consumer import consume_proses_gaji
+from core.process_gaji.consumer import start_consumer_in_background
 from core.process_gaji.phase3 import build_himpunan_gaji
 
 # Extracted constants for clarity and reuse
@@ -20,16 +20,25 @@ API_VERSION = "1.0.0"
 MSG_UNKNOWN_BATCH = "Unknown Gaji Batch ID"
 MSG_SUCCESS = "Success"
 
-scheduler = AsyncIOScheduler()
-
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
-    loop = asyncio.get_event_loop()
-    loop.create_task(consume_proses_gaji())
-    scheduler.start()
-    yield
-    scheduler.shutdown()
+async def lifespan(_app: FastAPI):
+    # Startup: start Kafka consumer
+    consumer_task = start_consumer_in_background()
+    _app.state.consumer_task = consumer_task
+    LOGGER.info("Kafka consumer started in background")
+
+    try:
+        yield
+    finally:
+        task = getattr(_app.state, "consumer_task", None)
+        if task and not task.done():
+            task.cancel()
+            try:
+                await task
+            except asyncio.CancelledError:
+                LOGGER.info("Kafka consumer cancelled")
+        _app.state.consumer_task = None
 
 
 app = FastAPI(

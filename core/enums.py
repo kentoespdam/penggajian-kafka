@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class STATUS_PEGAWAI(Enum):
+class StatusPegawai(Enum):
     KONTRAK = 0
     CAPEG = 1
     PEGAWAI = 2
@@ -10,7 +10,7 @@ class STATUS_PEGAWAI(Enum):
     NON_PEGAWAI = 5
 
 
-class STATUS_KERJA(Enum):
+class StatusKerja(Enum):
     BERHENTI_OR_KELUAR = 0
     DIRUMAHKAN = 1
     KARYAWAN_AKTIF = 2
@@ -21,7 +21,7 @@ class STATUS_KERJA(Enum):
     DITOLAK = 7
 
 
-class HUBUNGAN_KELUARGA(Enum):
+class HubunganKeluarga(Enum):
     SUAMI = 0
     ISTRI = 1
     AYAH = 2
@@ -30,7 +30,7 @@ class HUBUNGAN_KELUARGA(Enum):
     SAUDARA = 5
 
 
-class STATUS_KAWIN(Enum):
+class StatusKawin(Enum):
     BELUM_KAWIN = 0
     KAWIN = 1
     JANDA_DUDA = 2
@@ -38,13 +38,13 @@ class STATUS_KAWIN(Enum):
     TIDAK_TAHU = 4
 
 
-class STATUS_PENDIDIKAN(Enum):
+class StatusPendidikan(Enum):
     BELUM_SEKOLAH = 0
     SEKOLAH = 1
     SELESAI_SEKOLAH = 2
 
 
-class TUNJANGAN(Enum):
+class Tunjangan(Enum):
     JABATAN = 0
     KINERJA = 1
     BERAS = 2
@@ -61,7 +61,7 @@ class EProsesGaji(Enum):
     FAILED = 6
 
 
-class JENIS_SP(Enum):
+class JenisSp(Enum):
     TEGURAN_LISAN = 0
     SP_1 = 1
     SP_2 = 2
@@ -69,19 +69,19 @@ class JENIS_SP(Enum):
     SANKSI_DENGAN_SK = 4
 
 
-class JENIS_GAJI(Enum):
+class JenisGaji(Enum):
     NONE = "NONE"
     PEMASUKAN = "PEMASUKAN"
     POTONGAN = "POTONGAN"
 
 
-class PROCESS_GAJI_STATUS(Enum):
+class ProcessGajiStatus(Enum):
     SUCCESS = "Success"
     FAILED = "Failed"
     DUPLICATE = "Duplicate"
 
 
-class EXCEL_TEXT_ALIGN(Enum):
+class ExcelTextAlign(Enum):
     H_TOP = 0
     H_CENTER = 1
     H_BOTTOM = 2

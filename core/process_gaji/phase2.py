@@ -5,7 +5,7 @@ import dask.dataframe as dd
 import pandas as pd
 
 from core.config import LOGGER
-from core.enums import PROCESS_GAJI_STATUS, EProsesGaji
+from core.enums import ProcessGajiStatus, EProsesGaji
 from core.helpers import cleanup_is_boolean
 from core.models.gaji_batch_master import fetch_gaji_batch_master_data_by_batch_root_id, update_gaji_batch_master
 from core.models.gaji_batch_master_proses import delete_gaji_batch_master_proses_by_batch_master_id_list, \
@@ -24,7 +24,7 @@ from core.process_gaji.phase2_compare import compare_with_latest_gaji
 from core.process_gaji.phase2_helper import _replace_formula_to_variable
 
 
-def calculate_gaji_detail(root_batch_id: str) -> PROCESS_GAJI_STATUS:
+def calculate_gaji_detail(root_batch_id: str) -> ProcessGajiStatus:
     start_time = datetime.now()
     LOGGER.info(f"Starting phase2: calculate gaji detail for batch ID {root_batch_id}")
     gbm_df = fetch_gaji_batch_master_data_by_batch_root_id(root_batch_id)
@@ -33,7 +33,7 @@ def calculate_gaji_detail(root_batch_id: str) -> PROCESS_GAJI_STATUS:
         update_status_gaji_batch_root(
             root_batch_id, status_process=EProsesGaji.FAILED.value
         )
-        return PROCESS_GAJI_STATUS.FAILED
+        return ProcessGajiStatus.FAILED
 
     gbm_ddf = dd.from_pandas(gbm_df, npartitions=2)
     gbm_ddf["is_askes"] = gbm_ddf["is_askes"].map(cleanup_is_boolean, meta=("is_askes", "bool"))
@@ -41,7 +41,7 @@ def calculate_gaji_detail(root_batch_id: str) -> PROCESS_GAJI_STATUS:
 
     gbm_df = process_gaji_komponen_detail(root_batch_id, gbm_df)
     if gbm_df.empty:
-        return PROCESS_GAJI_STATUS.FAILED
+        return ProcessGajiStatus.FAILED
 
     gbm_df["penghasilan_kotor2"] = 0
     gbm_df["penghasilan_bersih2"] = 0
@@ -64,11 +64,11 @@ def calculate_gaji_detail(root_batch_id: str) -> PROCESS_GAJI_STATUS:
         update_status_gaji_batch_root(
             root_batch_id, status_process=EProsesGaji.FAILED.value
         )
-        return PROCESS_GAJI_STATUS.FAILED
+        return ProcessGajiStatus.FAILED
 
     end_time = datetime.now()
     LOGGER.info(f"process gaji finished in {end_time - start_time}")
-    return PROCESS_GAJI_STATUS.SUCCESS
+    return ProcessGajiStatus.SUCCESS
 
 
 def process_gaji_komponen_detail(batch_root_id: str, master_df: pd.DataFrame) -> pd.DataFrame:

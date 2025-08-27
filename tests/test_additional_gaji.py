@@ -2,7 +2,7 @@ from unittest import TestCase
 
 import pandas as pd
 import dask.dataframe as dd
-from icecream import ic
+# from icecream import ic
 
 from core.config import LOGGER
 from core.models.gaji_batch_master import fetch_all_gaji_batch_master_by_batch_root_id
@@ -20,8 +20,8 @@ class TestAdditionalGaji(TestCase):
         ddf = ddf.map_partitions(lambda part: _applying_dataframe(part, gaji_batch_proses_df),
                                  meta=master_batch_df.dtypes.to_dict())
         df = ddf.compute()
-        ic(df[["nipam", "total_add_tambahan", "total_add_potongan", "penghasilan_bersih2", "pembulatan2",
-               "penghasilan_bersih_final2"]].head().to_dict(orient="records"))
+        # ic(df[["nipam", "total_add_tambahan", "total_add_potongan", "penghasilan_bersih2", "pembulatan2",
+        #        "penghasilan_bersih_final2"]].head().to_dict(orient="records"))
 
         # recalculate_gaji(master_batch_df, gaji_batch_proses_df)
 

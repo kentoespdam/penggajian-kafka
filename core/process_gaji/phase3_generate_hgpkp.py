@@ -5,7 +5,7 @@ from openpyxl.styles import Alignment, Font
 from openpyxl.workbook import Workbook
 from openpyxl.worksheet.worksheet import Worksheet
 
-from core.enums import STATUS_PEGAWAI
+from core.enums import StatusPegawai
 from core.excel_helper import cell_builder
 from core.helpers import get_nama_bulan
 
@@ -48,7 +48,7 @@ def generate_hgpkp_sheet(
     organisasi_wt_cabang = organisasi_df[mask].reset_index(drop=True)
     for _, organisasi in organisasi_wt_cabang.iterrows():
         mask_kode_organisasi = gaji_pegawai_df["kode_organisasi"].str.startswith(str(organisasi["kode"]))
-        mask_status_pegawai = gaji_pegawai_df["status_pegawai"].ne(STATUS_PEGAWAI.KONTRAK.value)
+        mask_status_pegawai = gaji_pegawai_df["status_pegawai"].ne(StatusPegawai.KONTRAK.value)
         mask = mask_kode_organisasi & mask_status_pegawai
         pegawai_ids = gaji_pegawai_df[mask]["id"].tolist()
 
@@ -173,7 +173,7 @@ def _generate_cell_list(
 
 def _generate_footer(worksheet: Worksheet, row_num: int, gaji_pegawai_df: pd.DataFrame, komponen_gaji_df: pd.DataFrame,
                      organisasi_wt_cabang: pd.DataFrame):
-    mask_status_pegawai = gaji_pegawai_df["status_pegawai"].ne(STATUS_PEGAWAI.KONTRAK.value)
+    mask_status_pegawai = gaji_pegawai_df["status_pegawai"].ne(StatusPegawai.KONTRAK.value)
     organisasi_kode_list = tuple(organisasi_wt_cabang["kode"].unique().tolist())
     mask_kode_organisasi = gaji_pegawai_df["kode_organisasi"].str.startswith(organisasi_kode_list)
     mask_level_id = gaji_pegawai_df["level_id"].isin([2, 3, 4])

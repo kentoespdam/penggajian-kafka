@@ -6,7 +6,10 @@ author = [
     { name = "Bagus Sudrajat", email = "kentoes.pdam@gmail.com" }
 ]
 requires-python = ">= 3.12.10" 
-dependencies = []
+dependencies = [
+    "fastapi==0.116.1",
+
+]
 
 
 [build-system]
