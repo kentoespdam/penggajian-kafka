@@ -21,41 +21,41 @@ API_VERSION = "1.0.0"
 MSG_UNKNOWN_BATCH = "Unknown Gaji Batch ID"
 MSG_SUCCESS = "Success"
 
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    consumer = AIOKafkaConsumer(
-        KAFKA_TOPIC,
-        bootstrap_servers=KAFKA_SERVER,
-        group_id=KAFKA_GROUP_ID,
-        enable_auto_commit=False,
-        value_deserializer=lambda x: x.decode("utf-8"),
-        max_poll_records=1,
-
-        # Heartbeat and session
-        session_timeout_ms=45000,  # 45 seconds
-        heartbeat_interval_ms=15000,  # 15 seconds
-        max_poll_interval_ms=300000,  # 5 minutes
-
-        # Isolation level
-        isolation_level="read_committed",
-    )
-    try:
-        await consumer.start()
-        task = asyncio.create_task(consume_proses_gaji(consumer))
-        LOGGER.info("Kafka consumer started, waiting for messages...")
-        yield
-        task.cancel()
-    finally:
-        await consumer.stop()
-        LOGGER.info("Kafka consumer stopped")
+#
+# @asynccontextmanager
+# async def lifespan(app: FastAPI):
+#     consumer = AIOKafkaConsumer(
+#         KAFKA_TOPIC,
+#         bootstrap_servers=KAFKA_SERVER,
+#         group_id=KAFKA_GROUP_ID,
+#         enable_auto_commit=False,
+#         value_deserializer=lambda x: x.decode("utf-8"),
+#         max_poll_records=1,
+#
+#         # Heartbeat and session
+#         session_timeout_ms=45000,  # 45 seconds
+#         heartbeat_interval_ms=15000,  # 15 seconds
+#         max_poll_interval_ms=300000,  # 5 minutes
+#
+#         # Isolation level
+#         isolation_level="read_committed",
+#     )
+#     try:
+#         await consumer.start()
+#         task = asyncio.create_task(consume_proses_gaji(consumer))
+#         LOGGER.info("Kafka consumer started, waiting for messages...")
+#         yield
+#         task.cancel()
+#     finally:
+#         await consumer.stop()
+#         LOGGER.info("Kafka consumer stopped")
 
 
 app = FastAPI(
     title=API_TITLE,
     description=API_DESCRIPTION,
     version=API_VERSION,
-    lifespan=lifespan,
+    # lifespan=lifespan,
 )
 
 
