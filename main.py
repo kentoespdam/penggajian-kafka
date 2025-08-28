@@ -37,7 +37,7 @@ async def lifespan(app: FastAPI):
         max_poll_records=1,
 
         # Heartbeat and session
-        session_timeout_ms=45000,  # 45 seconds
+        session_timeout_ms=120000,  # 2 minutes
         heartbeat_interval_ms=15000,  # 15 seconds
         max_poll_interval_ms=300000,  # 5 minutes
 
@@ -115,3 +115,7 @@ async def upload_additional(root_batch_id: str, file: UploadFile):
 
     await process_excel(root_batch_id, file)
     return Response("Success", status_code=200)
+
+@app.get("/health")
+async def health():
+    return Response("OK", status_code=200)
