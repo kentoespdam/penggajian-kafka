@@ -2,11 +2,12 @@ volumes:
   penggajian_kafka:
 
 services:
-  penggajian_kafka:
+  penggajian:
     container_name: Penggajian-Kafka
-#    user: "appuser:appuser"
     user: "1000:1000"
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
       - "81:80"
     env_file:
