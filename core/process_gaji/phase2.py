@@ -1,4 +1,3 @@
-import sys
 from datetime import datetime
 
 import dask.dataframe as dd
@@ -169,8 +168,6 @@ def generate_result_gaji_batch_master(
         max_deductions: dict
 ) -> pd.DataFrame:
     final_df = pd.DataFrame()
-    spinner = ['|', '/', '-', '\\']
-    total_rows = batch_master_df["id"].size - 1
     for index, master_row in batch_master_df.iterrows():
         # if master_row["nipam"] != "830500484":
         #     continue
@@ -206,9 +203,5 @@ def generate_result_gaji_batch_master(
         profile_components_df = _calculate_nilai_formula(profile_components_df, master_row, max_deductions)
 
         final_df = pd.concat([final_df, profile_components_df])
-
-        progress = (index / total_rows) * 100  # noqa
-        sys.stdout.write(f'\rCalculating Data {spinner[index % len(spinner)]} : {progress:.2f}%')  # noqa
-        sys.stdout.flush()
 
     return final_df
