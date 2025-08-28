@@ -58,6 +58,7 @@ COPY --from=builder --chown=appuser:appuser ${APP_HOME}/.venv ${APP_HOME}/.venv
 
 USER appuser
 RUN mkdir -p ${APP_HOME}/result_excel
+RUN mkdir -p ${APP_HOME}/logs
 
 ENV TZ=Asia/Jakarta
 ENV PATH=${APP_HOME}/.venv/bin:$PATH
