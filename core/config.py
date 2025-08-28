@@ -1,4 +1,5 @@
 import logging
+import logging.handlers
 import os
 
 from dotenv import load_dotenv
@@ -6,9 +7,14 @@ from pymysql.cursors import DictCursor
 from pymysqlpool import Connection, ConnectionPool
 
 load_dotenv()
-logging.basicConfig(level=os.getenv('LOG_LEVEL', 'INFO'),
-                    format='%(asctime)s [%(levelname)8s] %(message)s (%(filename)s:%(lineno)s)', encoding='utf-8')
+logging.basicConfig(
+    # filename="logs/penggajian.log",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    level=os.getenv('LOG_LEVEL', 'INFO'),
+    format='%(asctime)s [%(levelname)8s] %(message)s (%(filename)s:%(lineno)s)', encoding='utf-8')
+logging.handlers.RotatingFileHandler("logs/penggajian.log", maxBytes=1000, backupCount=5)
 logging.getLogger("aiokafka").setLevel("ERROR")
+
 LOGGER = logging.getLogger(__name__)
 
 KAFKA_SERVER = str(os.getenv('KAFKA_SERVER'))

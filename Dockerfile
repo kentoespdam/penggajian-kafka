@@ -43,7 +43,6 @@ RUN apk add --no-cache \
     libstdc++ \
     openblas \
     librdkafka \
-    supervisor \
     curl &&  \
     rm -rf /var/cache/apk/*
 
